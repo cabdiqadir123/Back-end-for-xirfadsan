@@ -1,0 +1,5 @@
+# Ignore service account key JSON to keep it private
+serviceAccountKey.json
+
+# Ignore environment variables
+.env
