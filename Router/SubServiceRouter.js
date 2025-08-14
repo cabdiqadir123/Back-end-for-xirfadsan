@@ -11,7 +11,7 @@ SubServiceRouter.get('/', (req, res) => {
 });
 
 SubServiceRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select * from sub_services', (error, rows, fields) => {
+  mysqlconnection.query('SELECT sub_services.*,COALESCE(favourite.id, 0) AS favourite_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id;', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -49,6 +49,22 @@ SubServiceRouter.get("/getsupplier/all/:id", (req, res) => {
 SubServiceRouter.get("/image/:id", (req, res) => {
   const imageId = req.params.id;
   const query = "SELECT image FROM sub_services WHERE sub_service_id = ?";
+
+  mysqlconnection.query(query, [imageId], (err, result) => {
+    if (err) {
+      return res.status(500).send("Error fetching image");
+    }
+    if (result.length === 0) {
+      return res.status(404).send("Image not found");
+    }
+    res.contentType("image/jpeg");
+    res.send(result[0].image); // Send the image buffer back as a response
+  });
+});
+
+SubServiceRouter.get("/image_byname/:id", (req, res) => {
+  const imageId = req.params.id;
+  const query = "SELECT image FROM sub_services WHERE sub_service = ?";
 
   mysqlconnection.query(query, [imageId], (err, result) => {
     if (err) {

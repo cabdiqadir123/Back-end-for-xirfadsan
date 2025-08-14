@@ -101,7 +101,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
 
         const userId = result.insertId;
 
-        res.status(201).json({
+        res.status(200).json({
           id: userId,
           name,
           email,

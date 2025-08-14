@@ -9,7 +9,18 @@ BookingRouter.get('/', (req, res) => {
 });
 
 BookingRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.sub_service_id,sub_service,bookings.sub_service_id,name,email,password,phone,booking_status,bookings.created_at,startdate,bookings.staff_id,amount from users inner join bookings on bookings.customer_id=users.id inner join sub_services on bookings.sub_service_id=sub_services.sub_service_id',
+    mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff_user.name as staff_name,amount from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
+        (error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                console.log(error);
+            }
+        });
+});
+
+BookingRouter.get('/all_booking_sub_services', (req, res) => {
+    mysqlconnection.query('select id,book_id,booking_sub_services.sub_service_id,sub_service,item,price from sub_services inner join booking_sub_services on booking_sub_services.sub_service_id=sub_services.sub_service_id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -60,10 +71,23 @@ BookingRouter.get('/pending/all', (req, res) => {
   });
 
 BookingRouter.post('/add', (req, res) => {
-    const { book_id,customer_id, sub_service_id,address, booking_status,amount,staff_id,startdate} = req.body;
+    const { book_id,customer_id, service_id,address, booking_status,amount,staff_id,Avialable_time,discription,startdate} = req.body;
     console.log(req.body);
-    mysqlconnection.query('insert into bookings(book_id,customer_id,sub_service_id,address,booking_status,amount,staff_id,startdate) values(?,?,?,?,?,?,?,?);',
-        [book_id,customer_id, sub_service_id, address, booking_status,amount,staff_id,startdate], (error, rows, fields) => {
+    mysqlconnection.query('insert into bookings(book_id,customer_id,service_id,address,booking_status,amount,staff_id,Avialable_time,discription,startdate) values(?,?,?,?,?,?,?,?,?,?);',
+        [book_id,customer_id, service_id, address, booking_status,amount,staff_id,Avialable_time,discription,startdate], (error, rows, fields) => {
+            if (!error) {
+                res.json({ status: 'inserted' });
+            } else {
+                console.log(error);
+            }
+        });
+});
+
+BookingRouter.post('/add_booking_subservices', (req, res) => {
+    const { book_id,sub_service_id,item } = req.body;
+    console.log(req.body);
+    mysqlconnection.query('insert into booking_sub_services(book_id,sub_service_id,item) values(?,?,?);',
+        [book_id,sub_service_id,item], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {
