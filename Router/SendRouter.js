@@ -26,41 +26,37 @@ sendnotify.post('/send-data', async (req, res, next) => {
 
   try {
     const message = {
-      notification: {
-        title,
-        body
+      notification: { title, body },
+      data: {
+        orderid: "test order",
+        orderdate: "date",
+        timestamp: Date.now().toString()
       },
       android: {
-        priority: 'high',
+        priority: 'high',           // High priority = deliver ASAP
+        ttl: 0,                     // Time-to-live 0 = do not store, send immediately
         notification: {
           sound: 'default',
           clickAction: 'FLUTTER_NOTIFICATION_CLICK'
         }
       },
       apns: {
-        headers: {
-          'apns-priority': '10'
-        },
+        headers: { 'apns-priority': '10' },  // High priority for iOS
         payload: {
           aps: {
             sound: 'default',
             badge: 1,
-            alert: {
-              title,
-              body
-            }
+            alert: { title, body },
+            'content-available': 1             // Wake app in background
           }
         }
-      },
-      data: {
-        orderid: "test order",
-        orderdate: "date",
-        timestamp: Date.now().toString()
       },
       token
     };
 
-    const response = await getMessaging().send(message); 
+    const response = await getMessaging().send(message);
+
+    console.log("Notification sent at:", new Date().toISOString());
     return res.status(200).send({
       message: "Notification sent",
       response
@@ -73,6 +69,7 @@ sendnotify.post('/send-data', async (req, res, next) => {
     });
   }
 });
+
 
 // Multicast notification using getMessaging().sendEachForMulticast
 sendnotify.post('/send-data-to-all', async (req, res, next) => {
