@@ -84,16 +84,18 @@ BookingRouter.post('/add', (req, res) => {
 });
 
 BookingRouter.post('/add_booking_subservices', (req, res) => {
-    const { book_id,sub_service_id,item } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('insert into booking_sub_services(book_id,sub_service_id,item) values(?,?,?);',
-        [book_id,sub_service_id,item], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'inserted' });
-            } else {
-                console.log(error);
-            }
-        });
+  const { book_id, sub_service_id, item } = req.body;
+  mysqlconnection.query(
+    'INSERT INTO booking_sub_services(book_id, sub_service_id, item) VALUES (?, ?, ?);',
+    [book_id, sub_service_id, item],
+    (error, rows) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ status: 'error', error: error.message });
+      }
+      res.json({ status: 'inserted' });
+    }
+  );
 });
 
 BookingRouter.put('/update', (req, res) => {
