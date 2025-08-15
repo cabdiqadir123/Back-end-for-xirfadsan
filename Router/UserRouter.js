@@ -82,7 +82,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 UserRouter.post('/add', upload.single("image"), (req, res) => {
   try {
-    const { name, email, password, phone, address, sex, role, status } = req.body;
+    const { name, email, password, phone, address, sex, role, status ,token} = req.body;
     const imageBuffer = req.file.buffer;
     // Check if the user already exists
     mysqlconnection.query('SELECT * FROM users WHERE email = ? OR name = ?', [email, name], (error, rows) => {
@@ -93,8 +93,8 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
         return res.status(400).json({ message: "User already exists" });
       }
       // Insert new user into MySQL database
-      const query = 'insert into users(name,email,password,phone,address,sex,role,status,image) values(?,?,?,?,?,?,?,?,?);';
-      mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer], (error, result) => {
+      const query = 'insert into users(name,email,password,phone,address,sex,role,status,image,token) values(?,?,?,?,?,?,?,?,?,?);';
+      mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer,token], (error, result) => {
         if (error) {
           return res.status(500).json({ error: error.message });
         }
