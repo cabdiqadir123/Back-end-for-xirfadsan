@@ -19,16 +19,22 @@ FavourRouter.get('/all', (req, res) => {
 });
 
 FavourRouter.post('/add', (req, res) => {
-  const { sub_service_id ,user_id } = req.body;
+  const { sub_service_id, user_id } = req.body;
   console.log(req.body);
-  mysqlconnection.query('insert into favourite(sub_service_id ,user_id) values(?,?);',
-    [sub_service_id ,user_id], (error, rows, fields) => {
+  
+  mysqlconnection.query(
+    'INSERT INTO favourite(sub_service_id, user_id) VALUES (?, ?);',
+    [sub_service_id, user_id],
+    (error, results, fields) => {
       if (!error) {
-        res.json({ status: 'inserted' });
+        // return the inserted ID
+        res.json({ status: 'inserted', id: results.insertId });
       } else {
         console.log(error);
+        res.status(500).json({ status: 'error', error });
       }
-    });
+    }
+  );
 });
 
 FavourRouter.put('/update', (req, res) => {
