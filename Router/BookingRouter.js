@@ -115,7 +115,7 @@ BookingRouter.put('/updatestatus/:id', (req, res) => {
   const id = req.params.id;
   const { booking_status } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update Bookings set booking_status= ? where id=?'
+  mysqlconnection.query('update bookings set booking_status= ? where id=?'
       , [booking_status,  id], (error, rows, fields) => {
           if (!error) {
               res.json({ status: 'updated' });
