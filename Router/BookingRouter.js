@@ -71,16 +71,34 @@ BookingRouter.get('/pending/all', (req, res) => {
   });
 
 BookingRouter.post('/add', (req, res) => {
-    const { book_id,customer_id, service_id,address, booking_status,amount,staff_id,Avialable_time,discription,startdate} = req.body;
-    console.log(req.body);
-    mysqlconnection.query('insert into bookings(book_id,customer_id,service_id,address,booking_status,amount,staff_id,Avialable_time,discription,startdate) values(?,?,?,?,?,?,?,?,?,?);',
-        [book_id,customer_id, service_id, address, booking_status,amount,staff_id,Avialable_time,discription,startdate], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'inserted' });
-            } else {
-                console.log(error);
-            }
-        });
+  const { 
+    book_id,
+    customer_id, 
+    service_id,
+    address, 
+    booking_status,
+    amount,
+    staff_id,
+    Avialable_time,
+    discription,
+    startdate
+  } = req.body;
+
+  console.log(req.body);
+
+  mysqlconnection.query(
+    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,amount,staff_id,Avialable_time,discription,startdate) VALUES (?,?,?,?,?,?,?,?,?,?);',
+    [book_id, customer_id, service_id, address, booking_status, amount, staff_id, Avialable_time, discription, startdate],
+    (error, results) => {
+      if (!error) {
+        // ✅ Return the inserted book_id in the response
+        res.json({ book_id: book_id });
+      } else {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to insert booking' });
+      }
+    }
+  );
 });
 
 BookingRouter.post('/add_booking_subservices', (req, res) => {
