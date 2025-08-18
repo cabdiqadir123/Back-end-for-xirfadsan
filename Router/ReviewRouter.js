@@ -9,7 +9,7 @@ RatingRouter.get('/', (req, res) => {
 });
 
 RatingRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select review.id,review.sub_service_id,user_id,name,comment,rating,sub_service,service_id,price,review.created_at from users inner join review on review.user_id=users.id INNER JOIN sub_services on review.sub_service_id=sub_services.sub_service_id', (error, rows, fields) => {
+  mysqlconnection.query('SELECT review.id,user_id,staff_id,book_id,customer.name AS customer_name,staff.name AS staff_name,comment,rating,num_rating,review.created_at FROM review INNER JOIN users customer ON customer.id = review.user_id INNER JOIN users staff ON staff.id = review.staff_id;', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -19,10 +19,10 @@ RatingRouter.get('/all', (req, res) => {
 });
 
 RatingRouter.post('/add', (req, res) => {
-  const { sub_service_id ,user_id,comment,rating } = req.body;
+  const { user_id,staff_id,comment,rating,num_rating,book_id } = req.body;
   console.log(req.body);
-  mysqlconnection.query('insert into review(sub_service_id ,user_id,comment,rating) values(?,?,?,?);',
-    [sub_service_id ,user_id,comment,rating], (error, rows, fields) => {
+  mysqlconnection.query('insert into review(user_id,staff_id,comment,rating,num_rating,book_id) values(?,?,?,?,?,?);',
+    [user_id,staff_id,comment,rating,num_rating,book_id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'inserted' });
       } else {
