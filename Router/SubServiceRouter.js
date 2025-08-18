@@ -20,16 +20,6 @@ SubServiceRouter.get('/all', (req, res) => {
   });
 });
 
-// SubServiceRouter.get('/all_app', (req, res) => {
-//   mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description, service_id, num_of_rating, rating_service, COALESCE(favourite.id, 0) AS favourite_id, COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id AND favourite.user_id = 64', (error, rows, fields) => {
-//     if (!error) {
-//       res.json(rows);
-//     } else {
-//       console.log(error);
-//     }
-//   });
-// });
-
 SubServiceRouter.get("/service/all/:id", (req, res) => {
   const service_id = req.params.id;
   const query = "select * from sub_services WHERE service_id = (select service_id from services WHERE name=?)";
