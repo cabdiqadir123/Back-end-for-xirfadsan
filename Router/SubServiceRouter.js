@@ -11,7 +11,7 @@ SubServiceRouter.get('/', (req, res) => {
 });
 
 SubServiceRouter.get('/all', (req, res) => {
-  mysqlconnection.query('SELECT sub_services.*,COALESCE(favourite.id, 0) AS favourite_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id;', (error, rows, fields) => {
+  mysqlconnection.query('SELECT sub_services.*,COALESCE(favourite.id, 0) AS favourite_id,COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id;', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
