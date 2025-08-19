@@ -11,7 +11,7 @@ ServiceRouter.get('/', (req, res) => {
 });
 
 ServiceRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select * from services', (error, rows, fields) => {
+  mysqlconnection.query('select service_id,name,color,created_at  from services', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -22,7 +22,7 @@ ServiceRouter.get('/all', (req, res) => {
 
 ServiceRouter.get("/getbyservice/all/:id", (req, res) => {
   const service_id = req.params.id;
-  const query = "select * from services WHERE service_id = (select service_id from suppliers WHERE user_id=?)";
+  const query = "select service_id,name,color,created_at from services WHERE service_id = (select service_id from suppliers WHERE user_id=?)";
   mysqlconnection.query(query, [service_id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
