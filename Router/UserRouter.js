@@ -198,12 +198,12 @@ UserRouter.put('/updatepassword/:id', (req, res) => {
     });
 });
 
-UserRouter.put('/updatetoken/:phone', (req, res) => {
-  const phone = req.params.id;
+UserRouter.put('/updatetoken/:id', (req, res) => {
+  const id = req.params.id;
   const { token } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update users set token= ? where phone=?'
-    , [token, phone], (error, rows, fields) => {
+  mysqlconnection.query('update users set token= ? where id=?'
+    , [token, id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
       } else {
