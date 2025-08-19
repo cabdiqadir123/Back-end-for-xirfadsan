@@ -203,7 +203,7 @@ UserRouter.put('/updatetoken/:phone', (req, res) => {
   const { token } = req.body;
   console.log(req.body);
   mysqlconnection.query('update users set token= ? where phone=?'
-    , [token, id], (error, rows, fields) => {
+    , [token, phone], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
       } else {
