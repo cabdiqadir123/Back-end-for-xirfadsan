@@ -12,7 +12,7 @@ UserRouter.get('/', (req, res) => {
 });
 
 UserRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select * from users', (error, rows, fields) => {
+  mysqlconnection.query('select id,name,email,password,phone,address,sex,role,status,token,created_at from users', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -23,7 +23,7 @@ UserRouter.get('/all', (req, res) => {
 
 
 UserRouter.get('/customer/all', (req, res) => {
-  mysqlconnection.query('select * from users where role="customer"', (error, rows, fields) => {
+  mysqlconnection.query('select id,name,email,password,phone,address,sex,role,status,token,created_at from users where role="customer"', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -34,7 +34,7 @@ UserRouter.get('/customer/all', (req, res) => {
 
 UserRouter.get("/userrole/all/:id", (req, res) => {
   const id = req.params.id;
-  const query = "select * from users WHERE role = ?";
+  const query = "select id,name,email,password,phone,address,sex,role,status,token,created_at from users WHERE role = ?";
   mysqlconnection.query(query, [id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
