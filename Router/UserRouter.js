@@ -202,10 +202,10 @@ UserRouter.put('/updatetoken/:id', (req, res) => {
   const id = req.params.id;
   const { token } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update users set token= ? where id=?'
+  mysqlconnection.query('update users set token=? where phone=?'
     , [token, id], (error, rows, fields) => {
       if (!error) {
-        res.json({ status: 'updated' });
+        res.json({ status:token });
       } else {
         console.log(error);
       }
