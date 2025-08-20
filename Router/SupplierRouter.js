@@ -9,7 +9,7 @@ SupplierRouter.get('/', (req, res) => {
 });
 
 SupplierRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select supplier_id,user_id,service_id,name,email,password,phone,address,sex,role,status,image from users inner join suppliers on suppliers.user_id=users.id',
+    mysqlconnection.query('select supplier_id,user_id,suppliers.service_id,services.name,users.name,email,password,phone,address,sex,role,status from users inner join suppliers on suppliers.user_id=users.id INNER JOIN services on services.service_id=suppliers.service_id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
