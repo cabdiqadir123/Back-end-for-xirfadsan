@@ -212,17 +212,17 @@ UserRouter.put('/updatetoken/:id', (req, res) => {
     });
 });
 
-UserRouter.delete('/delete/:id', (req, res) => {
-  const { id } = req.body;
-  console.log(req.body);
-  mysqlconnection.query('delete from users where id=?'
-    , [id], (error, rows, fields) => {
-      if (!error) {
-        res.json(rows);
-      } else {
-        res.json({ status: error });
-      }
-    });
+UserRouter.post('/delete', (req, res) => {
+    const { id } = req.body;
+    console.log(req.body);
+    mysqlconnection.query('delete from users where id=?'
+        , [id], (error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                res.json({ status: error });
+            }
+        });
 });
 
 UserRouter.post('/login', (req, res) => {
