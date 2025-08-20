@@ -168,7 +168,7 @@ const upload = multer({ storage: storage });
 SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'gl1', maxCount: 1 }, { name: 'gl2', maxCount: 1 }
   , { name: 'gl3', maxCount: 1 },  { name: 'gl4', maxCount: 1 }, { name: 'gl5', maxCount: 1 }, { name: 'gl6', maxCount: 1 }
 ]), (req, res) => {
-  const { sub_service,description, service_id, pricez } = req.body;
+  const { sub_service,description, service_id, price } = req.body;
   const imageBuffer = req.files && req.files.image ? req.files.image[0].buffer : null;
   const imageBuffer1 = req.files && req.files.gl1 ? req.files.gl1[0].buffer : null;
   const imageBuffer2 = req.files && req.files.gl2 ? req.files.gl2[0].buffer : null;
