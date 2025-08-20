@@ -11,7 +11,7 @@ SubServiceRouter.get('/', (req, res) => {
 });
 
 SubServiceRouter.get('/all', (req, res) => {
-  mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description, service_id, num_of_rating, rating_service,COALESCE(favourite.id, 0) AS favourite_id,COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id;', (error, rows, fields) => {
+  mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description, service_id,COALESCE(favourite.id, 0) AS favourite_id,COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id;', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -22,7 +22,7 @@ SubServiceRouter.get('/all', (req, res) => {
 
 SubServiceRouter.get('/all_app/:id', (req, res) => {
    const id = req.params.id;
-  mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description, service_id, num_of_rating, rating_service, COALESCE(favourite.id, 0) AS favourite_id, COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id AND favourite.user_id = ?', [id], (error, rows, fields) => {
+  mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description, service_id, COALESCE(favourite.id, 0) AS favourite_id, COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id AND favourite.user_id = ?', [id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -168,7 +168,7 @@ const upload = multer({ storage: storage });
 SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'gl1', maxCount: 1 }, { name: 'gl2', maxCount: 1 }
   , { name: 'gl3', maxCount: 1 },  { name: 'gl4', maxCount: 1 }, { name: 'gl5', maxCount: 1 }, { name: 'gl6', maxCount: 1 }
 ]), (req, res) => {
-  const { sub_service,description, service_id, price, rating_service, num_of_rating } = req.body;
+  const { sub_service,description, service_id, pricez } = req.body;
   const imageBuffer = req.files && req.files.image ? req.files.image[0].buffer : null;
   const imageBuffer1 = req.files && req.files.gl1 ? req.files.gl1[0].buffer : null;
   const imageBuffer2 = req.files && req.files.gl2 ? req.files.gl2[0].buffer : null;
@@ -176,10 +176,10 @@ SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }, { n
   const imageBuffer4 = req.files && req.files.gl4 ? req.files.gl4[0].buffer : null;
   const imageBuffer5 = req.files && req.files.gl5 ? req.files.gl5[0].buffer : null;
   const imageBuffer6 = req.files && req.files.gl6 ? req.files.gl6[0].buffer : null;
-  const query = 'insert into sub_services(sub_service,description,service_id,price,image,gl1,gl2,gl3,gl4,gl5,gl6,rating_service,num_of_rating) values(?,?,(select service_id from services where name=?),?,?,?,?,?,?,?,?,?,?);';
+  const query = 'insert into sub_services(sub_service,description,service_id,price,image,gl1,gl2,gl3,gl4,gl5,gl6) values(?,?,(select service_id from services where name=?),?,?,?,?,?,?,?,?);';
   mysqlconnection.query(query,
     [sub_service,description, service_id, price, imageBuffer, imageBuffer1, imageBuffer2, imageBuffer3,
-      imageBuffer4, imageBuffer5, imageBuffer6,rating_service,num_of_rating
+      imageBuffer4, imageBuffer5, imageBuffer6
     ], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'inserted' });
