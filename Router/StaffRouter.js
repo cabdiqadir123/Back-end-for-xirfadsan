@@ -19,6 +19,17 @@ StaffRouter.get('/all', (req, res) => {
         });
 });
 
+StaffRouter.get('/all_admin', (req, res) => {
+    mysqlconnection.query('SELECT staff.staff_id, staff.user_id AS staff_user_id, staff.supplier_id, staff.sub_service_id, sub_service, u_staff.name AS staff_name, u_staff.email AS staff_email, u_staff.phone AS staff_phone, u_staff.address AS staff_address, u_staff.sex, u_staff.role, u_staff.status, u_staff.image, staff.available, u_supplier.name AS supplier_name, staff.created_at FROM staff INNER JOIN users u_staff ON staff.user_id = u_staff.id INNER JOIN suppliers s ON staff.supplier_id = s.supplier_id INNER JOIN users u_supplier ON s.user_id = u_supplier.id INNER join sub_services on staff.sub_service_id=sub_services.sub_service_id',
+        (error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                console.log(error);
+            }
+        });
+});
+
 StaffRouter.get("/image/:id", (req, res) => {
     const imageId = req.params.id;
     const query = 'select image from users inner join staff on staff.user_id=users.id where user_id=?';
