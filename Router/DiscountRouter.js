@@ -90,12 +90,11 @@ DiscountRouter.put("/update/:id", upload.single("image"), (req, res) => {
 });
 
 
-
-DiscountRouter.delete('/delete', (req, res) => {
-    const { banner_id } = req.body;
+DiscountRouter.post('/delete', (req, res) => {
+    const { id } = req.body;
     console.log(req.body);
     mysqlconnection.query('delete from discount where id=?'
-        , [banner_id], (error, rows, fields) => {
+        , [id], (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
             } else {
