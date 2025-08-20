@@ -52,7 +52,7 @@ SupplierRouter.put("/update/:id", (req, res) => {
     const id = req.params.id;
     const { service_id } = req.body;
     console.log(req.body);
-    mysqlconnection.query('update suppliers set service_id= (select service_id from services where name=?) where supplier_id=?'
+    mysqlconnection.query('update suppliers set service_id=(select service_id from services where name=?) where supplier_id=?'
         , [service_id,id], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'updated' });
