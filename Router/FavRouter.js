@@ -9,7 +9,7 @@ FavourRouter.get('/', (req, res) => {
 });
 
 FavourRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select id,favourite.sub_service_id,user_id,sub_service,rating_service,num_of_rating,service_id,price,description,favourite.created_at from favourite INNER JOIN sub_services on favourite.sub_service_id=sub_services.sub_service_id', (error, rows, fields) => {
+  mysqlconnection.query('select id,favourite.sub_service_id,user_id,sub_service,service_id,price,description,favourite.created_at from favourite INNER JOIN sub_services on favourite.sub_service_id=sub_services.sub_service_id', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
