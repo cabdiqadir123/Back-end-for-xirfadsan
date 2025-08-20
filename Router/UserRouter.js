@@ -212,7 +212,7 @@ UserRouter.put('/updatetoken/:id', (req, res) => {
     });
 });
 
-UserRouter.delete('/:users/delete/:id', (req, res) => {
+UserRouter.delete('/delete/:id', (req, res) => {
   const { id } = req.body;
   console.log(req.body);
   mysqlconnection.query('delete from users where id=?'
