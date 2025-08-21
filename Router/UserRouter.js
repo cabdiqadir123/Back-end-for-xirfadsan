@@ -160,26 +160,14 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
   mysqlconnection.query(query, values, (err, result) => {
     if (err) {
       console.error(err);
-      return res.status(500).send("Error updating the user"+res.body);
+      return res.status(500).json({ error: err.message });
     }
 
     if (result.affectedRows === 0) {
       return res.status(404).send("User not found");
     }
 
-    // res.status(200).send("user updated successfully");
-    res.status(200).json({
-          id: userId,
-          name,
-          email,
-          password,
-          phone,
-          address,
-          dof,
-          sex,
-          role,
-          status,
-        });
+    res.status(200).send("user updated successfully");
   });
 });
 
