@@ -179,7 +179,6 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
           sex,
           role,
           status,
-          token: generateToken(userId),
         });
   });
 });
