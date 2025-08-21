@@ -12,7 +12,7 @@ UserRouter.get('/', (req, res) => {
 });
 
 UserRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select id,name,email,password,phone,address,sex,role,status,token,created_at from users', (error, rows, fields) => {
+  mysqlconnection.query('select id,name,email,password,phone,address,dof,sex,role,status,token,created_at from users', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -23,7 +23,7 @@ UserRouter.get('/all', (req, res) => {
 
 
 UserRouter.get('/customer/all', (req, res) => {
-  mysqlconnection.query('select id,name,email,password,phone,address,sex,role,status,token,created_at from users where role="customer"', (error, rows, fields) => {
+  mysqlconnection.query('select id,name,email,password,phone,address,dof,sex,role,status,token,created_at from users where role="customer"', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -34,7 +34,7 @@ UserRouter.get('/customer/all', (req, res) => {
 
 UserRouter.get("/userrole/all/:id", (req, res) => {
   const id = req.params.id;
-  const query = "select id,name,email,password,phone,address,sex,role,status,token,created_at from users WHERE role = ?";
+  const query = "select id,name,email,password,phone,address,dof,sex,role,status,token,created_at from users WHERE role = ?";
   mysqlconnection.query(query, [id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
@@ -82,7 +82,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 UserRouter.post('/add', upload.single("image"), (req, res) => {
   try {
-    const { name, email, password, phone, address, sex, role, status ,token} = req.body;
+    const { name, email, password, phone, address,dof, sex, role, status ,token} = req.body;
     const imageBuffer = req.file.buffer;
     // Check if the user already exists
     mysqlconnection.query('SELECT * FROM users WHERE email = ? OR name = ?', [email, name], (error, rows) => {
@@ -93,8 +93,8 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
         return res.status(400).json({ message: "User already exists" });
       }
       // Insert new user into MySQL database
-      const query = 'insert into users(name,email,password,phone,address,sex,role,status,image,token) values(?,?,?,?,?,?,?,?,?,?);';
-      mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer,token], (error, result) => {
+      const query = 'insert into users(name,email,password,phone,address,dof,sex,role,status,image,token) values(?,?,?,?,?,?,?,?,?,?,?);';
+      mysqlconnection.query(query, [name, email, password, phone, address,dof, sex, role, status, imageBuffer,token], (error, result) => {
         if (error) {
           return res.status(500).json({ error: error.message });
         }
@@ -108,6 +108,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
           password,
           phone,
           address,
+          dof,
           sex,
           role,
           status,
@@ -136,16 +137,16 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
 
 UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
   const id = req.params.id;
-  const { name, email, password, phone, address, sex, role, status } = req.body;
+  const { name, email, password, phone, address, dof, sex, role, status } = req.body;
 
   const imageBuffer = req.file?.buffer;
 
   // Build dynamic SQL
   let query = `
     UPDATE users 
-    SET name= ?, email= ?, password= ?,phone= ?, address=? ,sex= ?,role= ?,status=?
+    SET name= ?, email= ?, password= ?,phone= ?, address=?, dof=?, sex= ?,role= ?,status=?
   `;
-  const values = [name, email, password, phone, address, sex, role, status];
+  const values = [name, email, password, phone, address, dof, sex, role, status];
 
   // Only update image if a new one is uploaded
   if (imageBuffer) {
@@ -229,7 +230,7 @@ UserRouter.post('/login', (req, res) => {
   try {
     const { phone, password } = req.body;
 
-    mysqlconnection.query('SELECT * FROM users WHERE phone = ?', [phone], (error, rows) => {
+    mysqlconnection.query('SELECT id,name,email,password,phone,address,dof,sex,role,status,token,created_at FROM users WHERE phone = ?', [phone], (error, rows) => {
       if (error) {
         return res.status(500).json({ error: error.message });
       }
@@ -245,6 +246,7 @@ UserRouter.post('/login', (req, res) => {
               password: user.password,
               phone: user.phone,
               address: user.address,
+              dof: user.dof,
               sex: user.sex,
               role: user.role,
               status: user.status,
@@ -270,7 +272,7 @@ UserRouter.post('/profile', (req, res) => {
   try {
     const { id, token } = req.body;
 
-    mysqlconnection.query('SELECT * FROM users WHERE id = ?', [id], (error, rows) => {
+    mysqlconnection.query('SELECT id,name,email,password,phone,address,dof,sex,role,status,token,created_at FROM users WHERE id = ?', [id], (error, rows) => {
       if (error) {
         return res.status(500).json({ error: error.message });
       }
@@ -284,6 +286,7 @@ UserRouter.post('/profile', (req, res) => {
           password: user.password,
           phone: user.phone,
           address: user.address,
+          dof: user.dof,
           sex: user.sex,
           role: user.role,
           status: user.status,
