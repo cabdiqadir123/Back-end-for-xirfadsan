@@ -160,7 +160,7 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
   mysqlconnection.query(query, values, (err, result) => {
     if (err) {
       console.error(err);
-      return res.status(500).send("Error updating the user");
+      return res.status(500).send("Error updating the user"+res.body);
     }
 
     if (result.affectedRows === 0) {
