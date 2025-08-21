@@ -82,7 +82,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 UserRouter.post('/add', upload.single("image"), (req, res) => {
   try {
-    const { name, email, password, phone, address,dof, sex, role, status ,token} = req.body;
+    const { name, email, password, phone, address,dof,sex, role, status ,token} = req.body;
     const imageBuffer = req.file.buffer;
     // Check if the user already exists
     mysqlconnection.query('SELECT * FROM users WHERE email = ? OR name = ?', [email, name], (error, rows) => {
