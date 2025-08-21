@@ -167,7 +167,20 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
       return res.status(404).send("User not found");
     }
 
-    res.status(200).send("user updated successfully");
+    // res.status(200).send("user updated successfully");
+    res.status(200).json({
+          id: userId,
+          name,
+          email,
+          password,
+          phone,
+          address,
+          dof,
+          sex,
+          role,
+          status,
+          token: generateToken(userId),
+        });
   });
 });
 
