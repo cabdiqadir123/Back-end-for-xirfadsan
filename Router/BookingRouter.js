@@ -9,7 +9,7 @@ BookingRouter.get('/', (req, res) => {
 });
 
 BookingRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff_user.name as staff_name,staff_user.phone AS staff_phone,,amount from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
+    mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff_user.name as staff_name,staff_user.phone AS staff_phone,amount from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
