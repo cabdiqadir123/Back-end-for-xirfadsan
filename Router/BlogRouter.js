@@ -90,13 +90,11 @@ BlogRouter.put("/update/:id", upload.single("image"), (req, res) => {
 });
 
 
-
-
 BlogRouter.post('/delete', (req, res) => {
-  const { service_id } = req.body;
+  const { id } = req.body;
   console.log(req.body);
   mysqlconnection.query('delete from blog where id=?'
-    , [service_id], (error, rows, fields) => {
+    , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);
       } else {
