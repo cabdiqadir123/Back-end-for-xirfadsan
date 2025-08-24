@@ -33,7 +33,7 @@ SubServiceRouter.get('/all_app/:id', (req, res) => {
 
 SubServiceRouter.get("/service/all/:id", (req, res) => {
   const service_id = req.params.id;
-  const query = "select subservice from sub_services WHERE service_id = (select service_id from services WHERE name=?)";
+  const query = "select subservice from sub_services WHERE service_id = (select service_id from suppliers WHERE user_id=(select id from users where name=?))";
   mysqlconnection.query(query, [service_id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
