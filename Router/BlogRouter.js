@@ -25,15 +25,16 @@ BlogRouter.get("/image/:id", (req, res) => {
     const query = "SELECT image FROM blog WHERE id=?";
 
     mysqlconnection.query(query, [imageId], (err, result) => {
-        if (err) {
-            return res.status(500).send("Error fetching image");
-        }
-        if (result.length === 0) {
-            return res.status(404).send("Image not found");
-        }
+        if (err) return res.status(500).send("Error fetching image");
+        if (result.length === 0) return res.status(404).send("Image not found");
 
-        res.contentType("image/jpeg");
-        res.send(result[0].image); // Send the image buffer back as a response
+        // Set headers
+        res.setHeader("Content-Type", "image/jpeg"); // adjust if you store PNGs
+        res.setHeader("Cache-Control", "public, max-age=31536000"); // cache for 1 year
+        res.setHeader("Content-Length", result[0].image.length);
+
+        // Send raw buffer
+        res.end(result[0].image);
     });
 });
 
@@ -54,53 +55,53 @@ BlogRouter.post("/add", upload.single("image"), (req, res) => {
 });
 
 BlogRouter.put("/update/:id", upload.single("image"), (req, res) => {
-  const id = req.params.id;
-  const { title, blog  } = req.body;
+    const id = req.params.id;
+    const { title, blog } = req.body;
 
-  const imageBuffer = req.file?.buffer;
+    const imageBuffer = req.file?.buffer;
 
-  // Build dynamic SQL
-  let query = `
+    // Build dynamic SQL
+    let query = `
     UPDATE blog 
     SET title =?, blog =?
   `;
-  const values = [title, blog ];
+    const values = [title, blog];
 
-  // Only update image if a new one is uploaded
-  if (imageBuffer) {
-    query += `, image = ?`;
-    values.push(imageBuffer);
-  }
-
-  query += ` WHERE id = ?`;
-  values.push(id);
-
-  mysqlconnection.query(query, values, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error updating the blog");
+    // Only update image if a new one is uploaded
+    if (imageBuffer) {
+        query += `, image = ?`;
+        values.push(imageBuffer);
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).send("blog not found");
-    }
+    query += ` WHERE id = ?`;
+    values.push(id);
 
-    res.status(200).send("blog updated successfully");
-  });
+    mysqlconnection.query(query, values, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Error updating the blog");
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).send("blog not found");
+        }
+
+        res.status(200).send("blog updated successfully");
+    });
 });
 
 
 BlogRouter.post('/delete', (req, res) => {
-  const { id } = req.body;
-  console.log(req.body);
-  mysqlconnection.query('delete from blog where id=?'
-    , [id], (error, rows, fields) => {
-      if (!error) {
-        res.json(rows);
-      } else {
-        res.json({ status: error });
-      }
-    });
+    const { id } = req.body;
+    console.log(req.body);
+    mysqlconnection.query('delete from blog where id=?'
+        , [id], (error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                res.json({ status: error });
+            }
+        });
 });
 
 module.exports = BlogRouter;
