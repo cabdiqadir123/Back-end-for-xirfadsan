@@ -82,7 +82,7 @@ BlogRouter.put("/update/:id", upload.single("image"), (req, res) => {
     }
 
     if (result.affectedRows === 0) {
-      return res.status(404).send("Discount not found");
+      return res.status(404).send("blog not found");
     }
 
     res.status(200).send("blog updated successfully");
@@ -91,17 +91,18 @@ BlogRouter.put("/update/:id", upload.single("image"), (req, res) => {
 
 
 
-BlogRouter.delete('/delete', (req, res) => {
-    const { banner_id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('delete from blog where id=?'
-        , [banner_id], (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                res.json({ status: error });
-            }
-        });
+
+BlogRouter.post('/delete', (req, res) => {
+  const { service_id } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('delete from blog where id=?'
+    , [service_id], (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        res.json({ status: error });
+      }
+    });
 });
 
 module.exports = BlogRouter;
