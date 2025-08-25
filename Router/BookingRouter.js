@@ -156,19 +156,4 @@ BookingRouter.post('/delete', (req, res) => {
         });
 });
 
-
-BookingRouter.post('/adding', (req, res) => {
-    const { user_id, booking_id , amount,status} = req.body;
-    console.log(req.body);
-    mysqlconnection.query(
-        'insert into earnings(user_id,booking_id,amount,status) values(?,?,?,?);',
-        [user_id, booking_id,amount,status ], (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                res.json({ status: error });
-            }
-        });
-});
-
 module.exports = BookingRouter;
