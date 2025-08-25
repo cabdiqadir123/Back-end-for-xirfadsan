@@ -48,7 +48,7 @@ EarningRouter.post('/add', (req, res) => {
     const { user_id, booking_id , amount,status} = req.body;
     console.log(req.body);
     mysqlconnection.query(
-        'insert into earnings(user_id,booking_id,amount,status ) values(?,?,?,?);',
+        'insert into earnings(user_id,booking_id,amount,status) values(?,?,?,?);',
         [user_id, booking_id,amount,status ], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
