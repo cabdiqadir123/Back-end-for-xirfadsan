@@ -31,7 +31,7 @@ EarningRouter.get('/earningstaff', (req, res) => {
     });
 });
 
-EarningRouter.post('/adding', (req, res) => {
+EarningRouter.post('/add', (req, res) => {
     const { user_id, booking_id , amount,status} = req.body;
     console.log(req.body);
     mysqlconnection.query(
