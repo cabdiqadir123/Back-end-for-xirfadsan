@@ -31,7 +31,7 @@ EarningRouter.get('/earningstaff', (req, res) => {
     });
 });
 
-BookingRouter.post('/add', (req, res) => {
+EarningRouter.post('/adding', (req, res) => {
     const { user_id, booking_id , amount,status} = req.body;
     console.log(req.body);
     mysqlconnection.query(
@@ -41,20 +41,6 @@ BookingRouter.post('/add', (req, res) => {
                 res.json(rows);
             } else {
                 res.json({ status: error });
-            }
-        });
-});
-
-EarningRouter.post('/add', (req, res) => {
-    const { user_id, booking_id , amount,status} = req.body;
-    console.log(req.body);
-    mysqlconnection.query(
-        'insert into earnings(user_id,booking_id,amount,status) values(?,?,?,?);',
-        [user_id, booking_id,amount,status ], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'inserted' });
-            } else {
-                console.log(error);
             }
         });
 });
