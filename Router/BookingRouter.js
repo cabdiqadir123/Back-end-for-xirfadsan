@@ -158,11 +158,11 @@ BookingRouter.post('/delete', (req, res) => {
 
 
 BookingRouter.post('/adding', (req, res) => {
-    const { user_id, booking_id , amount,status,created_at} = req.body;
+    const { user_id, booking_id , amount,status} = req.body;
     console.log(req.body);
     mysqlconnection.query(
-        'insert into earnings(user_id,booking_id,amount,status,created_at) values(?,?,?,?);',
-        [user_id, booking_id,amount,status,created_at ], (error, rows, fields) => {
+        'insert into earnings(user_id,booking_id,amount,status) values(?,?,?,?);',
+        [user_id, booking_id,amount,status ], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {
