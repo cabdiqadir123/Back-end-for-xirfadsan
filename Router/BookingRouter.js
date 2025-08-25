@@ -164,10 +164,9 @@ BookingRouter.post('/adding', (req, res) => {
         'insert into earnings(user_id,booking_id,amount,status) values(?,?,?,?);',
         [user_id, booking_id,amount,status ], (error, rows, fields) => {
             if (!error) {
-                res.json({ status: 'inserted' });
+                res.json(rows);
             } else {
-                console.log(error);
-                res.json({ status: 'error' });
+                res.json({ status: error });
             }
         });
 });
