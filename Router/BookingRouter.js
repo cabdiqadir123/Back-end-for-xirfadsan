@@ -157,7 +157,7 @@ BookingRouter.post('/delete', (req, res) => {
 });
 
 
-BookingRouter.post('/add', (req, res) => {
+BookingRouter.post('/adding', (req, res) => {
     const { user_id, booking_id , amount,status} = req.body;
     console.log(req.body);
     mysqlconnection.query(
