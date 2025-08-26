@@ -9,7 +9,7 @@ BookingRouter.get('/', (req, res) => {
 });
 
 BookingRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff.user_id AS staff_user_id,staff_user.name as staff_name,staff_user.phone AS staff_phone,amount,per from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
+    mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff.user_id AS staff_user_id,staff_user.name as staff_name,staff_user.phone AS staff_phone,price_amount,amount,per from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -77,6 +77,7 @@ BookingRouter.post('/add', (req, res) => {
     service_id,
     address, 
     booking_status,
+    price_amount,
     amount,
     per,
     staff_id,
@@ -88,8 +89,8 @@ BookingRouter.post('/add', (req, res) => {
   console.log(req.body);
 
   mysqlconnection.query(
-    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,amount,per,staff_id,Avialable_time,discription,startdate) VALUES (?,?,?,?,?,?,?,?,?,?,?);',
-    [book_id, customer_id, service_id, address, booking_status, amount, per,staff_id, Avialable_time, discription, startdate],
+    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,staff_id,Avialable_time,discription,startdate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);',
+    [book_id, customer_id, service_id, address, booking_status,price_amount, amount, per,staff_id, Avialable_time, discription, startdate],
     (error, results) => {
       if (!error) {
         // ✅ Return the inserted book_id in the response
