@@ -102,10 +102,10 @@ BookingRouter.post('/add', (req, res) => {
 });
 
 BookingRouter.post('/add_booking_subservices', (req, res) => {
-  const { book_id, sub_service_id, item } = req.body;
+  const { book_id, sub_service_id, item,staff_id } = req.body;
   mysqlconnection.query(
-    'INSERT INTO booking_sub_services(book_id, sub_service_id, item) VALUES (?, ?, ?);',
-    [book_id, sub_service_id, item],
+    'INSERT INTO booking_sub_services(book_id, sub_service_id, item) VALUES (?, ?, ?,(select staff_id from staff where sub_service_id=?),"Pending");',
+    [book_id, sub_service_id, item,staff_id],
     (error, rows) => {
       if (error) {
         console.log(error);
