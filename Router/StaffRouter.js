@@ -9,7 +9,7 @@ StaffRouter.get('/', (req, res) => {
 });
 
 StaffRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select staff_id,user_id,supplier_id,sub_service_id,name,email,password,phone,address,dof,sex,role,status,image,available,staff.created_at from users inner join staff on staff.user_id=users.id',
+    mysqlconnection.query('select staff_id,user_id,supplier_id,service_id,staff.sub_service_id,name,email,password,phone,address,dof,sex,role,status,available,staff.created_at from users inner join staff on staff.user_id=users.id INNER join sub_services on sub_services.sub_service_id=staff.sub_service_id ',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
