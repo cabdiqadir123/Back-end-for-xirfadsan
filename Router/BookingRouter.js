@@ -102,16 +102,36 @@ BookingRouter.post('/add', (req, res) => {
 });
 
 BookingRouter.post('/add_booking_subservices', (req, res) => {
-  const { book_id, sub_service_id, item,staff_id } = req.body;
+  const { book_id, sub_service_id, item } = req.body;
+
+  const sql = `
+    INSERT INTO booking_sub_services 
+    (book_id, sub_service_id, item, staff_id, status)
+    VALUES (
+      ?, 
+      ?, 
+      ?, 
+      COALESCE(
+        (SELECT staff_id 
+         FROM staff 
+         WHERE sub_service_id = ? 
+         ORDER BY RAND() 
+         LIMIT 1),
+        0
+      ),
+      "Pending"
+    )
+  `;
+
   mysqlconnection.query(
-    'INSERT INTO booking_sub_services(book_id, sub_service_id, item) VALUES (?, ?, ?,(select staff_id from staff where sub_service_id=?),"Pending");',
-    [book_id, sub_service_id, item,staff_id],
-    (error, rows) => {
+    sql,
+    [book_id, sub_service_id, item, sub_service_id],
+    (error) => {
       if (error) {
-        console.log(error);
-        return res.status(500).json({ status: 'error', error: error.message });
+        console.error(error);
+        return res.status(500).json({ status: "error", error: error.message });
       }
-      res.json({ status: 'inserted' });
+      res.json({ status: "inserted" });
     }
   );
 });
