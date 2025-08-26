@@ -20,7 +20,7 @@ BookingRouter.get('/all', (req, res) => {
 });
 
 BookingRouter.get('/all_booking_sub_services', (req, res) => {
-    mysqlconnection.query("select id,book_id,booking_Sub_Services.sub_service_id,sub_service,item,price from sub_services inner join booking_Sub_Services  on booking_Sub_Services .sub_service_id=sub_services.sub_service_id",
+    mysqlconnection.query("select id,book_id,booking_sub_services.sub_service_id,sub_service,item,price from sub_services inner join booking_Sub_Services  on booking_Sub_Services .sub_service_id=sub_services.sub_service_id",
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -104,7 +104,7 @@ BookingRouter.post('/add', (req, res) => {
 BookingRouter.post('/add_booking_subservices', (req, res) => {
   const { book_id, sub_service_id, item } = req.body;
 
-  const sql = `INSERT INTO booking_Sub_Services (book_id, sub_service_id, item) VALUES (?, ?, ? )`;
+  const sql = `INSERT INTO booking_sub_services (book_id, sub_service_id, item) VALUES (?, ?, ? )`;
 
   mysqlconnection.query(
     sql,
