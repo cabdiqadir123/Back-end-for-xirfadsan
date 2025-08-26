@@ -9,7 +9,7 @@ StaffRouter.get('/', (req, res) => {
 });
 
 StaffRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select staff_id,user_id,supplier_id,service_id,staff.sub_service_id,name,email,password,phone,address,dof,sex,role,status,available,staff.created_at from users inner join staff on staff.user_id=users.id INNER join sub_services on sub_services.sub_service_id=staff.sub_service_id ',
+    mysqlconnection.query('select staff_id,user_id,service_id,services.name as servicename,name,email,password,phone,address,dof,sex,role,status,available,staff.created_at from users inner join staff on staff.user_id=users.id INNER join services on services.service_id =staff.service_id ',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -20,7 +20,7 @@ StaffRouter.get('/all', (req, res) => {
 });
 
 StaffRouter.get('/all_admin', (req, res) => {
-    mysqlconnection.query('SELECT staff.staff_id, staff.user_id AS staff_user_id, staff.supplier_id, staff.sub_service_id, sub_service, u_staff.name AS staff_name, u_staff.email AS staff_email,u_staff.password,u_staff.phone AS staff_phone, u_staff.address AS staff_address,u_staff.dof, u_staff.sex, u_staff.role, u_staff.status, u_staff.image, staff.available, u_supplier.name AS supplier_name, staff.created_at FROM staff INNER JOIN users u_staff ON staff.user_id = u_staff.id INNER JOIN suppliers s ON staff.supplier_id = s.supplier_id INNER JOIN users u_supplier ON s.user_id = u_supplier.id INNER join sub_services on staff.sub_service_id=sub_services.sub_service_id',
+    mysqlconnection.query('SELECT staff.staff_id, staff.user_id AS staff_user_id, staff.service_id, services.service_id, u_staff.name AS staff_name, u_staff.email AS staff_email,u_staff.password,u_staff.phone AS staff_phone, u_staff.address AS staff_address,u_staff.dof, u_staff.sex, u_staff.role, u_staff.status, u_staff.image, staff.available,staff.created_at FROM staff INNER JOIN users u_staff ON staff.user_id = u_staff.id INNER join services s  on staff.service_id=services.service_id ',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -50,7 +50,7 @@ StaffRouter.post('/add', (req, res) => {
     const { name, supplier_id, sub_service_id,available } = req.body;
     console.log(req.body);
     mysqlconnection.query(
-        'insert into staff(user_id,supplier_id,sub_service_id,available) values((select id from users where name=?),(select supplier_id from suppliers where user_id=(select id from users where name=?)),(select sub_service_id from sub_services where sub_service=?),?);',
+        'insert into staff(user_id,service_id,available) values((select id from users where name=?),(select service_id from services s  where name=?),?);',
         [name, supplier_id, sub_service_id,available], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
@@ -64,7 +64,7 @@ StaffRouter.put("/update/:id", (req, res) => {
     const id = req.params.id;
     const { supplier_id, sub_service_id } = req.body;
     console.log(req.body);
-    mysqlconnection.query('update staff set supplier_id=(select supplier_id from suppliers where user_id=(select id from users where name=?)), sub_service_id= (select sub_service_id from sub_services where sub_service=?) where staff_id=?'
+    mysqlconnection.query('update staff set service_id=(select service_id from services where name=?) where staff_id=?'
         , [supplier_id, sub_service_id,id], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'updated' });
