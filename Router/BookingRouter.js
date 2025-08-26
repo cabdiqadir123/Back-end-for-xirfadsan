@@ -104,7 +104,7 @@ BookingRouter.post('/add', (req, res) => {
 BookingRouter.post('/add_booking_subservices', (req, res) => {
   const { book_id, sub_service_id, item } = req.body;
 
-  const sql = `INSERT INTO booking_Sub_Services (book_id, sub_service_id, item) VALUES (?, ?, ?, )`;
+  const sql = `INSERT INTO booking_Sub_Services (book_id, sub_service_id, item) VALUES (?, ?, ? )`;
 
   mysqlconnection.query(
     sql,
