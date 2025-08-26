@@ -20,7 +20,7 @@ BookingRouter.get('/all', (req, res) => {
 });
 
 BookingRouter.get('/all_booking_sub_services', (req, res) => {
-    mysqlconnection.query("SELECT bss.id AS booking_sub_id,bss.book_id,bss.sub_service_id,ss.sub_service,bss.item,ss.price,bss.status,bss.staff_id,COALESCE(u.name, 'Not assigned yet') AS staff_name,COALESCE(u.phone, 'Not assigned yet') AS staff_phone FROM sub_services ss INNER JOIN booking_Sub_Services bss ON bss.sub_service_id = ss.sub_service_id LEFT JOIN staff s ON bss.staff_id = s.staff_id LEFT JOIN users u ON s.user_id = u.id",
+    mysqlconnection.query("select id,book_id,booking_sub_services.sub_service_id,sub_service,item,price from sub_services inner join booking_sub_services on booking_sub_services.sub_service_id=sub_services.sub_service_id",
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -105,21 +105,12 @@ BookingRouter.post('/add_booking_subservices', (req, res) => {
   const { book_id, sub_service_id, item } = req.body;
 
   const sql = `
-    INSERT INTO booking_Sub_Services 
-    (book_id, sub_service_id, item, staff_id, status)
+    INSERT INTO booking_sub_services 
+    (book_id, sub_service_id, item)
     VALUES (
       ?, 
       ?, 
       ?, 
-      COALESCE(
-        (SELECT staff_id 
-         FROM staff 
-         WHERE sub_service_id = ? 
-         ORDER BY RAND() 
-         LIMIT 1),
-        0
-      ),
-      "Pending"
     )
   `;
 
