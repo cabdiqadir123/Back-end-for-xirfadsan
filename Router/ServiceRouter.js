@@ -32,6 +32,18 @@ ServiceRouter.get("/getbyservice/all/:id", (req, res) => {
   });
 });
 
+ServiceRouter.get("/byimage/:id", (req, res) => {
+  const imageId = req.params.id;
+  const query = "SELECT image FROM services WHERE name = ?";
+  mysqlconnection.query(query, [imageId], (err, result) => {
+    if (err) {
+      return res.status(500).send("Error fetching image");
+    }
+    res.contentType("image/jpeg");
+    res.send(result[0].image); // Send the image buffer back as a response
+  });
+});
+
 ServiceRouter.get("/image/:id", (req, res) => {
   const imageId = req.params.id;
   const query = "SELECT image FROM services WHERE service_id = ?";
