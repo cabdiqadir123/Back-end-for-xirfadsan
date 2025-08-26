@@ -20,7 +20,7 @@ BookingRouter.get('/all', (req, res) => {
 });
 
 BookingRouter.get('/all_booking_sub_services', (req, res) => {
-    mysqlconnection.query("SELECT bss.id AS booking_sub_id,bss.book_id,bss.sub_service_id,ss.sub_service,bss.item,ss.price,bss.staff_id,COALESCE(u.name, 'Not assigned yet') AS staff_name,COALESCE(u.phone, 'Not assigned yet') AS staff_phone FROM sub_services ss INNER JOIN booking_Sub_Services bss ON bss.sub_service_id = ss.sub_service_id LEFT JOIN staff s ON bss.staff_id = s.staff_id LEFT JOIN users u ON s.user_id = u.id",
+    mysqlconnection.query("SELECT bss.id AS booking_sub_id,bss.book_id,bss.sub_service_id,ss.sub_service,bss.item,ss.price,bss.status,bss.staff_id,COALESCE(u.name, 'Not assigned yet') AS staff_name,COALESCE(u.phone, 'Not assigned yet') AS staff_phone FROM sub_services ss INNER JOIN booking_Sub_Services bss ON bss.sub_service_id = ss.sub_service_id LEFT JOIN staff s ON bss.staff_id = s.staff_id LEFT JOIN users u ON s.user_id = u.id",
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
