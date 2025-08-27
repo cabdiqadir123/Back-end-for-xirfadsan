@@ -47,10 +47,10 @@ FaqRouter.put('/update/:id', (req, res) => {
 });
 
 FaqRouter.post('/delete', (req, res) => {
-    const { staff_id } = req.body;
+    const { faq_id } = req.body;
     console.log(req.body);
     mysqlconnection.query('delete from faq where faq_id=?'
-        , [staff_id], (error, rows, fields) => {
+        , [faq_id], (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
             } else {
