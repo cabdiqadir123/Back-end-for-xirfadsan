@@ -9,7 +9,7 @@ ComplaintRouter.get('/', (req, res) => {
 });
 
 ComplaintRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select complaint_id,user_id,name,complaint,book_id,complaint.created_at from users inner join complaint on complaint.user_id=users.id',
+    mysqlconnection.query('select complaint_id,user_id,name,complaint,book_id,complaint.created_at,issue from users inner join complaint on complaint.user_id=users.id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -20,10 +20,10 @@ ComplaintRouter.get('/all', (req, res) => {
 });
 
 ComplaintRouter.post('/add', (req, res) => {
-    const { user_id, complaint, book_id} = req.body;
+    const { user_id, complaint, book_id,issue} = req.body;
     console.log(req.body);
-    mysqlconnection.query('insert into complaint(user_id,complaint,book_id) values(?,?,?);',
-        [user_id, complaint,book_id], (error, rows, fields) => {
+    mysqlconnection.query('insert into complaint(user_id,complaint,book_id,issue) values(?,?,?);',
+        [user_id, complaint,book_id,issue], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {
