@@ -9,7 +9,7 @@ ComplaintRouter.get('/', (req, res) => {
 });
 
 ComplaintRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select complaint_id,user_id,name,complaint,book_id,complaint.created_at from users inner join complaint on complaint.user_id=users.id',
+    mysqlconnection.query('select complaint_id,user_id,name,complaint,book_id,complaint.created_at,issue from users inner join complaint on complaint.user_id=users.id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
