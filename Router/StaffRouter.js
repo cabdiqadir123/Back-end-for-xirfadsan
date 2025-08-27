@@ -62,10 +62,10 @@ StaffRouter.post('/add', (req, res) => {
 
 StaffRouter.put("/update/:id", (req, res) => {
     const id = req.params.id;
-    const { service_id } = req.body;
+    const { service_id,available } = req.body;
     console.log(req.body);
-    mysqlconnection.query('update staff set service_id=(select service_id from services where name=?) where staff_id=?'
-        , [service_id,id], (error, rows, fields) => {
+    mysqlconnection.query('update staff set service_id=(select service_id from services where name=?),available=? where staff_id=?'
+        , [service_id,available,id], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'updated' });
             } else {
