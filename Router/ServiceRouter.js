@@ -11,7 +11,7 @@ ServiceRouter.get('/', (req, res) => {
 });
 
 ServiceRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select service_id,name,color,created_at  from services', (error, rows, fields) => {
+  mysqlconnection.query('select service_id,name,image,color,created_at  from services', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -32,29 +32,29 @@ ServiceRouter.get("/getbyservice/all/:id", (req, res) => {
   });
 });
 
-ServiceRouter.get("/byimage/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT image FROM services WHERE name = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].image); // Send the image buffer back as a response
-  });
-});
+// ServiceRouter.get("/byimage/:id", (req, res) => {
+//   const imageId = req.params.id;
+//   const query = "SELECT image FROM services WHERE name = ?";
+//   mysqlconnection.query(query, [imageId], (err, result) => {
+//     if (err) {
+//       return res.status(500).send("Error fetching image");
+//     }
+//     res.contentType("image/jpeg");
+//     res.send(result[0].image); // Send the image buffer back as a response
+//   });
+// });
 
-ServiceRouter.get("/image/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT image FROM services WHERE service_id = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].image); // Send the image buffer back as a response
-  });
-});
+// ServiceRouter.get("/image/:id", (req, res) => {
+//   const imageId = req.params.id;
+//   const query = "SELECT image FROM services WHERE service_id = ?";
+//   mysqlconnection.query(query, [imageId], (err, result) => {
+//     if (err) {
+//       return res.status(500).send("Error fetching image");
+//     }
+//     res.contentType("image/jpeg");
+//     res.send(result[0].image); // Send the image buffer back as a response
+//   });
+// });
 
 ServiceRouter.get("/secondry_image/:id", (req, res) => {
   const imageId = req.params.id;
@@ -96,7 +96,7 @@ ServiceRouter.put(
     const id = req.params.id;
     const { name, color } = req.body;
 
-    const imageBuffer = req.files?.image?.[0]?.buffer;
+    const imageBuffer = req.files?.image?.[0]?.buffer.toString("utf-8");
     const secondryImageBuffer = req.files?.secondry_image?.[0]?.buffer;
 
     // Start SQL and values
