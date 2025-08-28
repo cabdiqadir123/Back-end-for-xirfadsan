@@ -32,30 +32,30 @@ ComplaintRouter.post('/add', (req, res) => {
         });
 });
 
-ComplaintRouter.put('/update', (req, res) => {
-    const { name, image, secondry_image, created_at, service_id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('update staff set name= ?, image= ?, secondry_image= ?, created_at=? where service_id=?'
-        , [name, image, secondry_image, created_at, service_id], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'updated' });
-            } else {
-                console.log(error);
-            }
-        });
+ComplaintRouter.put('/status/:id', (req, res) => {
+  const id = req.params.id;
+  const { issue } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('update complaint set  issue= ? where complaint_id=?'
+    , [issue, id], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'updated' });
+      } else {
+        console.log(error);
+      }
+    });
 });
 
-ComplaintRouter.post('/delete', (req, res) => {
-    const { staff_id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('delete from complaint where complaint_id=?'
-        , [staff_id], (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                res.json({ status: error });
-            }
-        });
+ComplaintRouter.post('/delete:id', (req, res) => {
+  const id = req.params.id;
+  mysqlconnection.query('delete from complaint where complaint_id=?'
+    , [id], (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        res.json({ status: error });
+      }
+    });
 });
 
 module.exports = ComplaintRouter;
