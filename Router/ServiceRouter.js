@@ -74,7 +74,7 @@ const upload = multer({ storage: storage });
 ServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'secondry_image', maxCount: 1 }
 ]), (req, res) => {
   const { name, color } = req.body;
-  const imageBuffer1 = req.files && req.files.image ? req.files.image[0].buffer : null;
+  const imageBuffer1 = req.files && req.files.image ? req.files.image[0].buffer.toString("utf-8") : null;
   const imageBuffer2 = req.files && req.files.secondry_image ? req.files.secondry_image[0].buffer : null;
   mysqlconnection.query('insert into services(name,image,secondry_image,color) values(?,?,?,?);',
     [name, imageBuffer1, imageBuffer2, color], (error, rows, fields) => {
