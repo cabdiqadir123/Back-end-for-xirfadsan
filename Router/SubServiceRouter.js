@@ -11,7 +11,7 @@ SubServiceRouter.get('/', (req, res) => {
 });
 
 SubServiceRouter.get('/all', (req, res) => {
-  mysqlconnection.query('SELECT s.sub_service_id, s.sub_service, s.price, s.description, s.service_id,COALESCE(MAX(f.id), 0) AS favourite_id,COALESCE(MAX(f.user_id), 0) AS favourite_user_id FROM sub_services s LEFT JOIN favourite f ON s.sub_service_id = f.sub_service_id GROUP BY s.sub_service_id, s.sub_service, s.price, s.description, s.service_id', (error, rows, fields) => {
+  mysqlconnection.query('SELECT s.sub_service_id, s.sub_service, s.price, s.description, s.service_id,services.name,COALESCE(MAX(f.id), 0) AS favourite_id,COALESCE(MAX(f.user_id), 0) AS favourite_user_id FROM sub_services s inner join services on services.service_id = s.service_id LEFT JOIN favourite f ON s.sub_service_id = f.sub_service_id GROUP BY s.sub_service_id, s.sub_service, s.price, s.description, s.service_id', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -22,7 +22,7 @@ SubServiceRouter.get('/all', (req, res) => {
 
 SubServiceRouter.get('/all_app/:id', (req, res) => {
    const id = req.params.id;
-  mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description, service_id, COALESCE(favourite.id, 0) AS favourite_id, COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id AND favourite.user_id = ?', [id], (error, rows, fields) => {
+  mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description,sub_services.service_id,services.name, COALESCE(favourite.id, 0) AS favourite_id, COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services inner join services on services.service_id  =sub_services.service_id LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id AND favourite.user_id = ?', [id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
