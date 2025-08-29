@@ -23,7 +23,7 @@ ComplaintRouter.post('/add', (req, res) => {
     const { user_id, complaint, book_id,issue} = req.body;
     console.log(req.body);
     mysqlconnection.query('insert into complaint(user_id,complaint,book_id,issue,comment) values(?,?,?,?);',
-        [user_id, complaint,book_id,issue,issue,issue], (error, rows, fields) => {
+        [user_id, complaint,book_id,issue,issue], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {
