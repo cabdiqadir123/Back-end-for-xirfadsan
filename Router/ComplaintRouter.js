@@ -22,8 +22,8 @@ ComplaintRouter.get('/all', (req, res) => {
 ComplaintRouter.post('/add', (req, res) => {
     const { user_id, complaint, book_id,issue} = req.body;
     console.log(req.body);
-    mysqlconnection.query('insert into complaint(user_id,complaint,book_id,issue) values(?,?,?,?);',
-        [user_id, complaint,book_id,issue,issue], (error, rows, fields) => {
+    mysqlconnection.query('insert into complaint(user_id,complaint,book_id,issue,comment) values(?,?,?,?);',
+        [user_id, complaint,book_id,issue,issue,issue], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {
@@ -34,10 +34,10 @@ ComplaintRouter.post('/add', (req, res) => {
 
 ComplaintRouter.put('/status/:id', (req, res) => {
   const id = req.params.id;
-  const { issue } = req.body;
+  const { issue,comment } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update complaint set  issue= ? where complaint_id=?'
-    , [issue, id], (error, rows, fields) => {
+  mysqlconnection.query('update complaint set issue= ?, comment=? where complaint_id=?'
+    , [issue,comment, id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
       } else {
