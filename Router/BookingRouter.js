@@ -30,6 +30,18 @@ BookingRouter.get('/all_booking_sub_services', (req, res) => {
         });
 });
 
+BookingRouter.get('/all_booking_sub_services/:id', (req, res) => {
+  const id = req.params.id;
+    mysqlconnection.query("select id,book_id,booking_sub_services.sub_service_id,sub_service,item,price from sub_services inner join booking_sub_services  on booking_sub_services .sub_service_id=sub_services.sub_service_id where book_id=?",
+        [id],(error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                console.log(error);
+            }
+        });
+});
+
 BookingRouter.get('/pending/all', (req, res) => {
     mysqlconnection.query('select * from bookings where booking_status="Pending"', (error, rows, fields) => {
       if (!error) {
