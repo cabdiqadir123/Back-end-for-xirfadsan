@@ -32,7 +32,7 @@ ComplaintRouter.post('/add', (req, res) => {
         });
 });
 
-ComplaintRouter.put('/status/:id', (req, res) => {
+ComplaintRouter.put('/update/:id', (req, res) => {
   const id = req.params.id;
   const { issue,comment } = req.body;
   console.log(req.body);
