@@ -89,97 +89,16 @@ SubServiceRouter.get("/image_byname/:id", (req, res) => {
   });
 });
 
-SubServiceRouter.get("/gl1/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT gl1 FROM sub_services WHERE sub_service_id = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].gl1); // Send the image buffer back as a response
-  });
-});
-
-SubServiceRouter.get("/gl2/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT gl2 FROM sub_services WHERE sub_service_id = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].gl2); // Send the image buffer back as a response
-  });
-});
-
-SubServiceRouter.get("/gl3/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT gl3 FROM sub_services WHERE sub_service_id = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].gl3); // Send the image buffer back as a response
-  });
-});
-
-SubServiceRouter.get("/gl4/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT gl4 FROM sub_services WHERE sub_service_id = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].gl4); // Send the image buffer back as a response
-  });
-});
-
-SubServiceRouter.get("/gl5/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT gl5 FROM sub_services WHERE sub_service_id = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].gl5); // Send the image buffer back as a response
-  });
-});
-
-SubServiceRouter.get("/gl6/:id", (req, res) => {
-  const imageId = req.params.id;
-  const query = "SELECT gl6 FROM sub_services WHERE sub_service_id = ?";
-  mysqlconnection.query(query, [imageId], (err, result) => {
-    if (err) {
-      return res.status(500).send("Error fetching image");
-    }
-    res.contentType("image/jpeg");
-    res.send(result[0].gl6); // Send the image buffer back as a response
-  });
-});
-
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'gl1', maxCount: 1 }, { name: 'gl2', maxCount: 1 }
-  , { name: 'gl3', maxCount: 1 },  { name: 'gl4', maxCount: 1 }, { name: 'gl5', maxCount: 1 }, { name: 'gl6', maxCount: 1 }
-]), (req, res) => {
+SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }]), (req, res) => {
   const { sub_service,description, service_id, price } = req.body;
   const imageBuffer = req.files && req.files.image ? req.files.image[0].buffer : null;
-  const imageBuffer1 = req.files && req.files.gl1 ? req.files.gl1[0].buffer : null;
-  const imageBuffer2 = req.files && req.files.gl2 ? req.files.gl2[0].buffer : null;
-  const imageBuffer3 = req.files && req.files.gl3 ? req.files.gl3[0].buffer : null;
-  const imageBuffer4 = req.files && req.files.gl4 ? req.files.gl4[0].buffer : null;
-  const imageBuffer5 = req.files && req.files.gl5 ? req.files.gl5[0].buffer : null;
-  const imageBuffer6 = req.files && req.files.gl6 ? req.files.gl6[0].buffer : null;
-  const query = 'insert into sub_services(sub_service,description,service_id,price,image,gl1,gl2,gl3,gl4,gl5,gl6) values(?,?,(select service_id from services where name=?),?,?,?,?,?,?,?,?);';
+  const query = 'insert into sub_services(sub_service,description,service_id,price,image) values(?,?,(select service_id from services where name=?),?,?);';
   mysqlconnection.query(query,
-    [sub_service,description, service_id, price, imageBuffer, imageBuffer1, imageBuffer2, imageBuffer3,
-      imageBuffer4, imageBuffer5, imageBuffer6
+    [sub_service,description, service_id, price, imageBuffer
     ], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'inserted' });
@@ -193,12 +112,6 @@ SubServiceRouter.put(
   "/update/:id",
   upload.fields([
     { name: 'image', maxCount: 1 },
-    { name: 'gl1', maxCount: 1 },
-    { name: 'gl2', maxCount: 1 },
-    { name: 'gl3', maxCount: 1 },
-    { name: 'gl4', maxCount: 1 },
-    { name: 'gl5', maxCount: 1 },
-    { name: 'gl6', maxCount: 1 },
   ]),
   (req, res) => {
     const id = req.params.id;
@@ -207,12 +120,6 @@ SubServiceRouter.put(
     // Collect file buffers only if present
     const fileFields = {
       image: req.files?.image?.[0]?.buffer,
-      gl1: req.files?.gl1?.[0]?.buffer,
-      gl2: req.files?.gl2?.[0]?.buffer,
-      gl3: req.files?.gl3?.[0]?.buffer,
-      gl4: req.files?.gl4?.[0]?.buffer,
-      gl5: req.files?.gl5?.[0]?.buffer,
-      gl6: req.files?.gl6?.[0]?.buffer,
     };
 
     // Start query and values
