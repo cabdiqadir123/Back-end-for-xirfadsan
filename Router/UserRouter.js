@@ -2,6 +2,8 @@ const { Router } = require('express')
 const path = require('path');
 const multer = require('multer');
 const generateToken = require("../GenerateToken.js");
+require('dotenv').config();
+const nodemailer = require('nodemailer');
 
 const UserRouter = Router();
 
@@ -82,7 +84,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 UserRouter.post('/add', upload.single("image"), (req, res) => {
   try {
-    const { name, email, password, phone, address,dof,sex, role, status ,token} = req.body;
+    const { name, email, password, phone, address, dof, sex, role, status, token } = req.body;
     const imageBuffer = req.file.buffer;
     // Check if the user already exists
     mysqlconnection.query('SELECT id,name,email,password,phone,address,dof,sex,role,status,token,created_at FROM users WHERE email = ? OR name = ?', [email, name], (error, rows) => {
@@ -94,7 +96,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
       }
       // Insert new user into MySQL database
       const query = 'insert into users(name,email,password,phone,address,dof,sex,role,status,image,token) values(?,?,?,?,?,?,?,?,?,?,?);';
-      mysqlconnection.query(query, [name, email, password, phone, address,dof, sex, role, status, imageBuffer,token], (error, result) => {
+      mysqlconnection.query(query, [name, email, password, phone, address, dof, sex, role, status, imageBuffer, token], (error, result) => {
         if (error) {
           return res.status(500).json({ error: error.message });
         }
@@ -206,7 +208,7 @@ UserRouter.put('/updatetoken/:id', (req, res) => {
   mysqlconnection.query('update users set token=? where phone=?'
     , [token, id], (error, rows, fields) => {
       if (!error) {
-        res.json({ status:token });
+        res.json({ status: token });
       } else {
         console.log(error);
       }
@@ -214,16 +216,16 @@ UserRouter.put('/updatetoken/:id', (req, res) => {
 });
 
 UserRouter.post('/delete', (req, res) => {
-    const { id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('delete from users where id=?'
-        , [id], (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                res.json({ status: error });
-            }
-        });
+  const { id } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('delete from users where id=?'
+    , [id], (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        res.json({ status: error });
+      }
+    });
 });
 
 UserRouter.post('/login', (req, res) => {
@@ -299,6 +301,41 @@ UserRouter.post('/profile', (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+UserRouter.post('/send-email', async (req, res) => {
+  const { from, title, text, to } = req.body;
+
+  if (!from || !title || !text || !to) {
+    return res.status(400).json({ message: 'Please provide from, to, title, and text.' });
+  }
+
+  try {
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,        // Gmail App Password (not your Gmail password)
+      },
+    });
+
+    // Mail options
+    const mailOptions = {
+      from: from,
+      to: to,
+      subject: title,
+      text: text,
+    };
+
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Email sent', info });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error sending email', error });
   }
 });
 
