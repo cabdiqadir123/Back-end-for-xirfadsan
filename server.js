@@ -33,6 +33,7 @@ app.use('/api/terms/',require('./Router/TermsRouter'));
 app.use('/api/privacy/',require('./Router/PrivacyRouter'));
 app.use('/api/subscriber/',require('./Router/SubscriberRouter'));
 app.use('/api/blog/',require('./Router/BlogRouter'));
+app.use('/api/send-email/',require('./Router/NodemailerRouter'));
 // app.use('/api/category/',CategoryRouters)
 
 app.listen(app.get('port'),()=>{
