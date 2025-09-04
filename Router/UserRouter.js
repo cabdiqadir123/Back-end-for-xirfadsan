@@ -199,6 +199,20 @@ UserRouter.put('/updatepassword/:id', (req, res) => {
     });
 });
 
+UserRouter.put('/forgetpassword/:id', (req, res) => {
+  const id = req.params.id;
+  const { password } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('update users set  password= ? where email=?'
+    , [password, id], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'updated' });
+      } else {
+        console.log(error);
+      }
+    });
+});
+
 UserRouter.put('/updatetoken/:id', (req, res) => {
   const id = req.params.id;
   const { token } = req.body;
