@@ -20,7 +20,7 @@ ComplaintRouter.get('/all', (req, res) => {
 });
 
 ComplaintRouter.post('/add', (req, res) => {
-    const { user_id, complaint, book_id,issue,comment} = req.body;
+    const { user_id,subject, complaint, book_id,issue,comment} = req.body;
     console.log(req.body);
     mysqlconnection.query('insert into complaint(user_id,subject,complaint,book_id,issue,comment) values(?,?,?,?,?,?);',
         [user_id,subject, complaint,book_id,issue,comment], (error, rows, fields) => {
