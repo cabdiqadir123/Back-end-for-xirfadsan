@@ -15,10 +15,12 @@ EmailRouter.post("/otp", async (req, res) => {
   try {
     // Create transporter
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "mail.xirfadsan.com",   
+      port: 465,              
+      secure: true,           
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // App Password
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS, 
       },
     });
 
