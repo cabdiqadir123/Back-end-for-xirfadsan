@@ -160,6 +160,20 @@ BookingRouter.put('/updatestatus/:id', (req, res) => {
       });
 });
 
+BookingRouter.put('/updateamount/:id', (req, res) => {
+  const id = req.params.id;
+  const { amount } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('update bookings set amount= ? where id=?'
+      , [amount,  id], (error, rows, fields) => {
+          if (!error) {
+              res.json({ status: 'updated' });
+          } else {
+              console.log(error);
+          }
+      });
+});
+
 BookingRouter.post('/delete', (req, res) => {
     const { supplier_id } = req.body;
     console.log(req.body);
