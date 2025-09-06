@@ -20,7 +20,7 @@ BlogRouter.get('/all', (req, res) => {
     });
 });
 
-ServiceRouter.get("/all/:id", (req, res) => {
+BlogRouter.get("/all/:id", (req, res) => {
   const blogid = req.params.id;
   const query = "select id,title, blog from blog where id=?";
   mysqlconnection.query(query, [blogid], (error, rows, fields) => {
