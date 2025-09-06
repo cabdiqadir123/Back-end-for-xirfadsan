@@ -85,7 +85,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
     const { name, email, password, phone, address,sex, role, status ,token} = req.body;
     const imageBuffer = req.file.buffer;
     // Check if the user already exists
-    mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token,created_at FROM users WHERE email = ? OR name = ?', [email, name], (error, rows) => {
+    mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token,created_at FROM users WHERE email = ? OR phone = ?', [email, phone], (error, rows) => {
       if (error) {
         return res.status(500).json({ error: error.message });
       }
