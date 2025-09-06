@@ -20,18 +20,16 @@ BlogRouter.get('/all', (req, res) => {
     });
 });
 
-BlogRouter.get("/all/:id", (req, res) => {
-    const id = req.params.id;
-    const query = "SELECT id,title,blog FROM blog WHERE id=?";
-
-    mysqlconnection.query(query, [id], (err, result) => {
-        if (err) {
-            return res.status(500).send("Error fetchin");
-        }
-        if (result.length === 0) {
-            return res.status(404).send("Image not found");
-        }
-    });
+ServiceRouter.get("/all/:id", (req, res) => {
+  const blogid = req.params.id;
+  const query = "select id,title, blog from blog where id=?";
+  mysqlconnection.query(query, [blogid], (error, rows, fields) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+    }
+  });
 });
 
 BlogRouter.get("/image/:id", (req, res) => {
