@@ -9,7 +9,7 @@ StaffRouter.get('/', (req, res) => {
 });
 
 StaffRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select staff_id,user_id, services.service_id,services.name as servicename,users.name,email, password,phone,address,dof,sex,role,status,available,staff.created_at from users inner join staff on staff.user_id=users.id INNER join services on services.service_id =staff.service_id',
+    mysqlconnection.query('select staff_id,user_id, services.service_id,services.name as servicename,users.name,email, password,phone,address,sex,role,status,available,staff.created_at from users inner join staff on staff.user_id=users.id INNER join services on services.service_id =staff.service_id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -20,7 +20,7 @@ StaffRouter.get('/all', (req, res) => {
 });
 
 StaffRouter.get('/all_admin', (req, res) => {
-    mysqlconnection.query('SELECT staff.staff_id, staff.user_id AS staff_user_id, staff.service_id,services.name as servicename, u_staff.name AS staff_name,u_staff.email AS staff_email,u_staff.password,u_staff.phone AS staff_phone, u_staff.address AS staff_address,u_staff.dof, u_staff.sex, u_staff.role, u_staff.status, u_staff.image, staff.available,staff.created_at FROM staff INNER JOIN users u_staff ON staff.user_id = u_staff.id INNER join services  on staff.service_id=services.service_id',
+    mysqlconnection.query('SELECT staff.staff_id, staff.user_id AS staff_user_id, staff.service_id,services.name as servicename, u_staff.name AS staff_name,u_staff.email AS staff_email,u_staff.password,u_staff.phone AS staff_phone, u_staff.address AS staff_address, u_staff.sex, u_staff.role, u_staff.status, u_staff.image, staff.available,staff.created_at FROM staff INNER JOIN users u_staff ON staff.user_id = u_staff.id INNER join services  on staff.service_id=services.service_id',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
