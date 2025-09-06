@@ -93,7 +93,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
         return res.status(400).json({ message: "User already exists" });
       }
       // Insert new user into MySQL database
-      const query = 'insert into users(name,email,password,phone,address,sex,role,status,image,token) values(?,?,?,?,?,?,?,?,?,?,?);';
+      const query = 'insert into users(name,email,password,phone,address,sex,role,status,image,token) values(?,?,?,?,?,?,?,?,?,?);';
       mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer,token], (error, result) => {
         if (error) {
           return res.status(500).json({ error: error.message });
