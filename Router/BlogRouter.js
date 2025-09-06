@@ -20,13 +20,16 @@ BlogRouter.get('/all', (req, res) => {
     });
 });
 
-BlogRouter.get('/all/:id', (req, res) => {
-  const id = req.params.id;
-    mysqlconnection.query('select id,title, blog from blog WHERE id=?', (error, rows, fields) => {
-        if (!error) {
-            res.json(rows);
-        } else {
-            console.log(error);
+BlogRouter.get("/all/:id", (req, res) => {
+    const id = req.params.id;
+    const query = "SELECT id,title, blog FROM blog WHERE id=?";
+
+    mysqlconnection.query(query, [id], (err, result) => {
+        if (err) {
+            return res.status(500).send("Error fetchin");
+        }
+        if (result.length === 0) {
+            return res.status(404).send("Image not found");
         }
     });
 });
