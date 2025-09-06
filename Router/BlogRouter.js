@@ -22,7 +22,7 @@ BlogRouter.get('/all', (req, res) => {
 
 BlogRouter.get("/all/:id", (req, res) => {
     const id = req.params.id;
-    const query = "SELECT id,title, blog FROM blog WHERE id=?";
+    const query = "SELECT id,title,blog FROM blog WHERE id=?";
 
     mysqlconnection.query(query, [id], (err, result) => {
         if (err) {
