@@ -20,6 +20,17 @@ BlogRouter.get('/all', (req, res) => {
     });
 });
 
+BlogRouter.get('/all/:id', (req, res) => {
+  const id = req.params.id;
+    mysqlconnection.query('select * from blog WHERE id=?', (error, rows, fields) => {
+        if (!error) {
+            res.json(rows);
+        } else {
+            console.log(error);
+        }
+    });
+});
+
 BlogRouter.get("/image/:id", (req, res) => {
     const imageId = req.params.id;
     const query = "SELECT image FROM blog WHERE id=?";
