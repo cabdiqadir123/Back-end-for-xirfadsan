@@ -22,7 +22,7 @@ BlogRouter.get('/all', (req, res) => {
 
 BlogRouter.get('/all/:id', (req, res) => {
   const id = req.params.id;
-    mysqlconnection.query('select id,title, blog, from blog WHERE id=?', (error, rows, fields) => {
+    mysqlconnection.query('select id,title, blog from blog WHERE id=?', (error, rows, fields) => {
         if (!error) {
             res.json(rows);
         } else {
