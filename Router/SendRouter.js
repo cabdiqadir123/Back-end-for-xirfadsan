@@ -26,8 +26,9 @@ sendnotify.post('/send-data', async (req, res) => {
 
   try {
     const message = {
-      notification: { title, body },
       data: {
+        title:title,
+        body:body,
         role: role ?? '',           // <-- send role if provided
         orderid: "test order",
         orderdate: "date",
@@ -88,8 +89,9 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
         const multicastMessage = {
           tokens,
-          notification: { title, body },
           data: {
+            title:body,
+            body:body,
             role, // <-- IMPORTANT: include role for filtering on Flutter
             orderid: "test order",
             orderdate: "date",
