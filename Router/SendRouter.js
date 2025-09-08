@@ -20,38 +20,22 @@ if (!admin.apps.length) {
   });
 }
 
-// ✅ Single user notification
+// ✅ Single user notification (data-only)
 sendnotify.post('/send-data', async (req, res) => {
-  const { title, body, token, role } = req.body; // <-- optional role for single user
+  const { title, body, token, role } = req.body;
 
   try {
     const message = {
-      notification: { title, body },
       data: {
-        role: role ?? '',           // <-- send role if provided
+        title,
+        body,
+        role: role ?? '',
         orderid: "test order",
         orderdate: "date",
         timestamp: Date.now().toString()
       },
-      android: {
-        priority: 'high',
-        ttl: 0,
-        notification: {
-          sound: 'default',
-          clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-        }
-      },
-      apns: {
-        headers: { 'apns-priority': '10' },
-        payload: {
-          aps: {
-            sound: 'default',
-            badge: 1,
-            alert: { title, body },
-            'content-available': 1
-          }
-        }
-      },
+      android: { priority: 'high', ttl: 0 },
+      apns: { headers: { 'apns-priority': '10' }, payload: { aps: { 'content-available': 1 } } },
       token
     };
 
@@ -64,7 +48,7 @@ sendnotify.post('/send-data', async (req, res) => {
   }
 });
 
-// ✅ Multicast notifications per role
+// ✅ Multicast notifications per role (data-only)
 sendnotify.post('/send-data-to-all', async (req, res) => {
   const { title, body, role } = req.body;
 
@@ -88,30 +72,16 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
         const multicastMessage = {
           tokens,
-          notification: { title, body },
           data: {
-            role, // <-- IMPORTANT: include role for filtering on Flutter
+            title,
+            body,
+            role,
             orderid: "test order",
             orderdate: "date",
             timestamp: Date.now().toString()
           },
-          android: {
-            priority: 'high',
-            notification: {
-              sound: 'default',
-              clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-            }
-          },
-          apns: {
-            headers: { 'apns-priority': '10' },
-            payload: {
-              aps: {
-                sound: 'default',
-                badge: 1,
-                alert: { title, body }
-              }
-            }
-          }
+          android: { priority: 'high' },
+          apns: { headers: { 'apns-priority': '10' }, payload: { aps: { 'content-available': 1 } } }
         };
 
         try {
