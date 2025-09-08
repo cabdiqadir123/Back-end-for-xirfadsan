@@ -21,7 +21,7 @@ FavourRouter.get('/all', (req, res) => {
 FavourRouter.post('/add', (req, res) => {
   const { sub_service_id, user_id } = req.body;
   console.log(req.body);
-  
+
   mysqlconnection.query(
     'INSERT INTO favourite(sub_service_id, user_id) VALUES (?, ?);',
     [sub_service_id, user_id],
@@ -38,10 +38,10 @@ FavourRouter.post('/add', (req, res) => {
 });
 
 FavourRouter.put('/update', (req, res) => {
-  const { name,ismultiple,unit_id } = req.body;
+  const { name, ismultiple, unit_id } = req.body;
   console.log(req.body);
   mysqlconnection.query('update favourite set sub_service_id= ?, user_id= ? where id=?'
-    , [name,ismultiple, unit_id], (error, rows, fields) => {
+    , [name, ismultiple, unit_id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
       } else {
@@ -53,6 +53,18 @@ FavourRouter.put('/update', (req, res) => {
 FavourRouter.post('/delete:id', (req, res) => {
   const id = req.params.id;
   mysqlconnection.query('delete from favourite where id=?'
+    , [id], (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        res.json({ status: error });
+      }
+    });
+});
+
+FavourRouter.post('/delete_all/:id', (req, res) => {
+  const id = req.params.id;
+  mysqlconnection.query('delete from favourite where user_id=?'
     , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);
