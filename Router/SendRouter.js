@@ -27,20 +27,17 @@ sendnotify.post('/send-data', async (req, res) => {
   try {
     const message = {
       data: {
-        title:title,
-        body:body,
-        role: role ?? '',           // <-- send role if provided
+        title: title,
+        body: body,
+        role: role ?? '',
         orderid: "test order",
         orderdate: "date",
         timestamp: Date.now().toString()
       },
       android: {
         priority: 'high',
-        ttl: 0,
-        notification: {
-          sound: 'default',
-          clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-        }
+        ttl: 0
+        // no notification field here
       },
       apns: {
         headers: { 'apns-priority': '10' },
@@ -48,8 +45,8 @@ sendnotify.post('/send-data', async (req, res) => {
           aps: {
             sound: 'default',
             badge: 1,
-            alert: { title, body },
             'content-available': 1
+            // no alert here
           }
         }
       },
@@ -90,19 +87,15 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
         const multicastMessage = {
           tokens,
           data: {
-            title:body,
-            body:body,
-            role, // <-- IMPORTANT: include role for filtering on Flutter
+            title: title,
+            body: body,
+            role,
             orderid: "test order",
             orderdate: "date",
             timestamp: Date.now().toString()
           },
           android: {
-            priority: 'high',
-            notification: {
-              sound: 'default',
-              clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-            }
+            priority: 'high'
           },
           apns: {
             headers: { 'apns-priority': '10' },
@@ -110,7 +103,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
               aps: {
                 sound: 'default',
                 badge: 1,
-                alert: { title, body }
+                'content-available': 1
               }
             }
           }
