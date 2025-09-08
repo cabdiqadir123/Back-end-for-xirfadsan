@@ -58,4 +58,16 @@ ComplaintRouter.post('/delete:id', (req, res) => {
     });
 });
 
+ComplaintRouter.post('/delete_all/:id', (req, res) => {
+  const id = req.params.id;
+  mysqlconnection.query('delete from complaint where user_id=?'
+    , [id], (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        res.json({ status: error });
+      }
+    });
+});
+
 module.exports = ComplaintRouter;

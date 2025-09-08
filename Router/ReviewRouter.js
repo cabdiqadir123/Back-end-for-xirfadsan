@@ -45,9 +45,9 @@ RatingRouter.put('/updatereview/:id', (req, res) => {
     });
 });
 
-RatingRouter.post('/delete:id', (req, res) => {
+RatingRouter.post('/delete_all/:id', (req, res) => {
   const id = req.params.id;
-  mysqlconnection.query('delete from review where id=?'
+  mysqlconnection.query('delete from review where user_id=?'
     , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);

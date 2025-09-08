@@ -85,4 +85,17 @@ NotificationRouter.post('/delete', (req, res) => {
         });
 });
 
+NotificationRouter.post('/delete_all', (req, res) => {
+    const { user_id } = req.body;
+    console.log(req.body);
+    mysqlconnection.query('delete from notifications where user_id=?'
+        , [user_id], (error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                res.json({ status: error });
+            }
+        });
+});
+
 module.exports = NotificationRouter;
