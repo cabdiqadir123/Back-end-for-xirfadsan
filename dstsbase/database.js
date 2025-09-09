@@ -9,8 +9,7 @@ const mysqlconnection = mysql.createPool({
   port: process.env.MYSQL_PORT,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-  timezone: '+03:00', // <-- add this
+  queueLimit: 0
 });
 
 module.exports = mysqlconnection;
