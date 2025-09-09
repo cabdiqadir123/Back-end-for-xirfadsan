@@ -194,7 +194,7 @@ BookingRouter.post('/delete_all/:id', (req, res) => {
   const sql = `
     DELETE FROM bookings 
     WHERE customer_id = ? 
-      AND status IN ('Cancelled', 'Pending')
+      AND booking_status IN ('Cancelled', 'Pending')
   `;
 
   mysqlconnection.query(sql, [id], (error, rows, fields) => {
