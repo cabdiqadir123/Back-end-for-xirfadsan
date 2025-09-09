@@ -95,14 +95,14 @@ BookingRouter.post('/add', (req, res) => {
     staff_id,
     Avialable_time,
     discription,
-    startdate
+    startdate,created_at
   } = req.body;
 
   console.log(req.body);
 
   mysqlconnection.query(
-    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,staff_id,Avialable_time,discription,startdate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);',
-    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, staff_id, Avialable_time, discription, startdate],
+    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,staff_id,Avialable_time,discription,startdate,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);',
+    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, staff_id, Avialable_time, discription, startdate,created_at],
     (error, results) => {
       if (!error) {
         // ✅ Return the inserted book_id in the response
