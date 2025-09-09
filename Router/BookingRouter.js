@@ -164,7 +164,7 @@ BookingRouter.put('/updateamount/:id', (req, res) => {
   const id = req.params.id;
   const { price_amount,amount } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update bookings set price_amount=? amount= ? where id=?'
+  mysqlconnection.query('update bookings set price_amount=?, amount= ? where id=?'
     , [price_amount ,amount, id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
