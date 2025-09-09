@@ -124,7 +124,7 @@ SubServiceRouter.put(
 
     // Start query and values
     let query = "UPDATE sub_services SET sub_service = ?, description = ? , service_id=(select service_id from services where name=?),	price=?";
-    const values = [sub_service, description,service_id,	pric];
+    const values = [sub_service, description,service_id,	price];
 
     // Dynamically append file fields to SQL and values
     for (const [key, buffer] of Object.entries(fileFields)) {
