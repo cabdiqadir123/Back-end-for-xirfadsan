@@ -111,7 +111,6 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
           sex,
           role,
           status,
-          created_at,
           token: generateToken(userId),
         });
       });
