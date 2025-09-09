@@ -94,11 +94,11 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }]), (req, res) => {
-  const { sub_service,description, service_id, price } = req.body;
+  const { sub_service,description, service_id, price,created_at } = req.body;
   const imageBuffer = req.files && req.files.image ? req.files.image[0].buffer : null;
-  const query = 'insert into sub_services(sub_service,description,service_id,price,image) values(?,?,(select service_id from services where name=?),?,?);';
+  const query = 'insert into sub_services(sub_service,description,service_id,price,image,created_at) values(?,?,(select service_id from services where name=?),?,?,?);';
   mysqlconnection.query(query,
-    [sub_service,description, service_id, price, imageBuffer
+    [sub_service,description, service_id, price, imageBuffer,created_at
     ], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'inserted' });

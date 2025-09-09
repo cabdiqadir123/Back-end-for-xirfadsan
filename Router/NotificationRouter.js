@@ -20,11 +20,11 @@ NotificationRouter.get('/all', (req, res) => {
 });
 
 NotificationRouter.post('/add', (req, res) => {
-    const {from_type,from_id, recipient_role,user_id,title, message, hasButton,hasBook_id,hasBook_started } = req.body;
+    const {from_type,from_id, recipient_role,user_id,title, message, hasButton,hasBook_id,hasBook_started ,created_at} = req.body;
     console.log(req.body);
     mysqlconnection.query(
-        'insert into notifications(from_type,from_id,recipient_role,user_id,title,message,hasButton,hasBook_id,hasBook_started) values(?,?,?,?,?,?,?,?,?);',
-        [from_type,from_id,recipient_role,user_id,title, message, hasButton, hasBook_id,hasBook_started], (error, rows, fields) => {
+        'insert into notifications(from_type,from_id,recipient_role,user_id,title,message,hasButton,hasBook_id,hasBook_started,created_at) values(?,?,?,?,?,?,?,?,?,?);',
+        [from_type,from_id,recipient_role,user_id,title, message, hasButton, hasBook_id,hasBook_started,created_at], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {

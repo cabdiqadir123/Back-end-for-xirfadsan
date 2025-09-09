@@ -47,11 +47,11 @@ StaffRouter.get("/image/:id", (req, res) => {
 });
 
 StaffRouter.post('/add', (req, res) => {
-    const { name, service_id,available } = req.body;
+    const { name, service_id,available,created_at } = req.body;
     console.log(req.body);
     mysqlconnection.query(
-        'insert into staff(user_id,service_id,available) values((select id from users where name=?),(select service_id from services where name=?),?);',
-        [name, service_id,available], (error, rows, fields) => {
+        'insert into staff(user_id,service_id,available,created_at) values((select id from users where name=?),(select service_id from services where name=?),?,?);',
+        [name, service_id,available,created_at], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {

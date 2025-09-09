@@ -19,10 +19,10 @@ RatingRouter.get('/all', (req, res) => {
 });
 
 RatingRouter.post('/add', (req, res) => {
-  const { user_id,staff_id,comment,rating,num_rating,book_id } = req.body;
+  const { user_id,staff_id,comment,rating,num_rating,book_id,created_at } = req.body;
   console.log(req.body);
-  mysqlconnection.query('insert into review(user_id,staff_id,comment,rating,num_rating,book_id) values(?,?,?,?,?,?);',
-    [user_id,staff_id,comment,rating,num_rating,book_id], (error, rows, fields) => {
+  mysqlconnection.query('insert into review(user_id,staff_id,comment,rating,num_rating,book_id,created_at) values(?,?,?,?,?,?,?);',
+    [user_id,staff_id,comment,rating,num_rating,book_id,created_at], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'inserted' });
       } else {

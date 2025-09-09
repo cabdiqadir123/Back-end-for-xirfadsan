@@ -19,12 +19,12 @@ FavourRouter.get('/all', (req, res) => {
 });
 
 FavourRouter.post('/add', (req, res) => {
-  const { sub_service_id, user_id } = req.body;
+  const { sub_service_id, user_id ,created_at} = req.body;
   console.log(req.body);
 
   mysqlconnection.query(
-    'INSERT INTO favourite(sub_service_id, user_id) VALUES (?, ?);',
-    [sub_service_id, user_id],
+    'INSERT INTO favourite(sub_service_id, user_id,created_at) VALUES (?, ?,?);',
+    [sub_service_id, user_id,created_at],
     (error, results, fields) => {
       if (!error) {
         // return the inserted ID

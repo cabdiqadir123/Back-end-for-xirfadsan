@@ -82,10 +82,10 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 UserRouter.post('/add', upload.single("image"), (req, res) => {
   try {
-    const { name, email, password, phone, address,sex, role, status ,token} = req.body;
+    const { name, email, password, phone, address,sex, role, status,created_at ,token} = req.body;
     const imageBuffer = req.file.buffer;
     // Check if the user already exists
-    mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token,created_at FROM users WHERE email = ? OR phone = ?', [email, phone], (error, rows) => {
+    mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token FROM users WHERE email = ? OR phone = ?', [email, phone], (error, rows) => {
       if (error) {
         return res.status(500).json({ error: error.message });
       }
@@ -93,8 +93,8 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
         return res.status(400).json({ message: "User already exists" });
       }
       // Insert new user into MySQL database
-      const query = 'insert into users(name,email,password,phone,address,sex,role,status,image,token) values(?,?,?,?,?,?,?,?,?,?);';
-      mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer,token], (error, result) => {
+      const query = 'insert into users(name,email,password,phone,address,sex,role,status,image,created_at,token) values(?,?,?,?,?,?,?,?,?,?,?);';
+      mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer,created_at,token], (error, result) => {
         if (error) {
           return res.status(500).json({ error: error.message });
         }
@@ -111,6 +111,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
           sex,
           role,
           status,
+          created_at,
           token: generateToken(userId),
         });
       });

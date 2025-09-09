@@ -41,11 +41,11 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 DiscountRouter.post("/add", upload.single("image"), (req, res) => {
-    const { sub_service_id, promocode, description, per, end_date,color } = req.body;
+    const { sub_service_id, promocode, description, per, end_date,color ,created_at} = req.body;
     const imageBuffer = req.file.buffer;
-    const query = "INSERT INTO discount (sub_service_id, promocode, description, per, image, end_date,color) VALUES ((select sub_service_id from sub_services where sub_service=?),?,?,?,?,?,?)";
+    const query = "INSERT INTO discount (sub_service_id, promocode, description, per, image, end_date,color,created_at) VALUES ((select sub_service_id from sub_services where sub_service=?),?,?,?,?,?,?,?)";
 
-    mysqlconnection.query(query, [sub_service_id, promocode, description, per, imageBuffer, end_date,color], (err, result) => {
+    mysqlconnection.query(query, [sub_service_id, promocode, description, per, imageBuffer, end_date,color,created_at], (err, result) => {
         if (err) {
             return res.status(500).send("Error saving image to database");
         }
