@@ -115,7 +115,7 @@ SubServiceRouter.put(
   ]),
   (req, res) => {
     const id = req.params.id;
-    const { sub_service, description } = req.body;
+    const { sub_service, description ,service_id,	price} = req.body;
 
     // Collect file buffers only if present
     const fileFields = {
@@ -123,8 +123,8 @@ SubServiceRouter.put(
     };
 
     // Start query and values
-    let query = "UPDATE sub_services SET sub_service = ?, description = ?";
-    const values = [sub_service, description];
+    let query = "UPDATE sub_services SET sub_service = ?, description = ? , service_id=(select service_id from services where name=?),	price=?";
+    const values = [sub_service, description,service_id,	pric];
 
     // Dynamically append file fields to SQL and values
     for (const [key, buffer] of Object.entries(fileFields)) {
