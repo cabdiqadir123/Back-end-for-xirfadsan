@@ -5,45 +5,45 @@ const NotificationRouter = Router();
 const mysqlconnection = require('../dstsbase/database.js');
 
 NotificationRouter.get('/', (req, res) => {
-    res.status(200).json('server on port 9000 and database is connected');
+  res.status(200).json('server on port 9000 and database is connected');
 });
 
 NotificationRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select * from notifications',
-        (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                console.log(error);
-            }
-        });
+  mysqlconnection.query('select * from notifications',
+    (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        console.log(error);
+      }
+    });
 });
 
 NotificationRouter.post('/add', (req, res) => {
-    const {from_type,from_id, recipient_role,user_id,title, message, hasButton,hasBook_id,hasBook_started ,created_at} = req.body;
-    console.log(req.body);
-    mysqlconnection.query(
-        'insert into notifications(from_type,from_id,recipient_role,user_id,title,message,hasButton,hasBook_id,hasBook_started,created_at) values(?,?,?,?,?,?,?,?,?,?);',
-        [from_type,from_id,recipient_role,user_id,title, message, hasButton, hasBook_id,hasBook_started,created_at], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'inserted' });
-            } else {
-                console.log(error);
-            }
-        });
+  const { from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at } = req.body;
+  console.log(req.body);
+  mysqlconnection.query(
+    'insert into notifications(from_type,from_id,recipient_role,user_id,title,message,hasButton,hasBook_id,hasBook_started,created_at) values(?,?,?,?,?,?,?,?,?,?);',
+    [from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'inserted' });
+      } else {
+        console.log(error);
+      }
+    });
 });
 
 NotificationRouter.put('/update', (req, res) => {
-    const { recipient_role, message,notification_id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('update notifications set recipient_role= ?, message= ? where notification_id=?'
-        , [recipient_role, message,notification_id], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'updated' });
-            } else {
-                console.log(error);
-            }
-        });
+  const { recipient_role, message, notification_id } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('update notifications set recipient_role= ?, message= ? where notification_id=?'
+    , [recipient_role, message, notification_id], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'updated' });
+      } else {
+        console.log(error);
+      }
+    });
 });
 
 NotificationRouter.put('/update-message-open/:id', (req, res) => {
@@ -73,28 +73,31 @@ NotificationRouter.put('/update-book_status/:id', (req, res) => {
 });
 
 NotificationRouter.post('/delete', (req, res) => {
-    const { notification_id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('delete from notifications where notification_id=?'
-        , [notification_id], (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                res.json({ status: error });
-            }
-        });
-});
-
-NotificationRouter.post('/delete_all/:id', (req, res) => {
-  const id = req.params.id;
-  mysqlconnection.query('delete from notifications where user_id=?'
-    , [id], (error, rows, fields) => {
+  const { notification_id } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('delete from notifications where notification_id=?'
+    , [notification_id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);
       } else {
         res.json({ status: error });
       }
     });
+});
+
+NotificationRouter.post('/delete_all/:id', (req, res) => {
+  const id = req.params.id;
+  mysqlconnection.query(
+    'DELETE FROM notifications WHERE user_id = ? OR from_id = ?',
+    [id, id],
+    (error, rows, fields) => {
+      if (!error) {
+        res.json({ success: true, affectedRows: rows.affectedRows });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  );
 });
 
 module.exports = NotificationRouter;
