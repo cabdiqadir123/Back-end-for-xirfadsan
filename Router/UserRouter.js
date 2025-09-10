@@ -216,7 +216,7 @@ UserRouter.put('/forgetpassword/:id', (req, res) => {
   const id = req.params.id;
   const { password } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update users set  password= ? where phone=?'
+  mysqlconnection.query('update users set  password= ? where email=?'
     , [password, id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
