@@ -2,46 +2,46 @@ const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
 
-const SendSmsRouter = express.Router();
+const SmsRouter = express.Router();
 
-// POST /api/send/sms
-SendSmsRouter.post("/otp", async (req, res) => {
+// POST /api/send-sms/otp
+SmsRouter.post("/otp", async (req, res) => {
   const { to, otp } = req.body;
 
   if (!to || !otp) {
     return res.status(400).json({ message: "Missing required fields (to, otp)" });
   }
 
-  const API_KEY = process.env.TEXTBEE_API_KEY; // store your API key in .env
-  const url = "https://api.textbee.dev/api/v1/sms/send";
-
   try {
+    // Construct the full TextBee endpoint with your device ID
+    const textBeeApiUrl = `${process.env.TEXTBEE_API_URL}/${process.env.TEXTBEE_DEVICE_ID}/send-sms`;
+
+    // Send SMS via TextBee
     const response = await axios.post(
-      url,
+      textBeeApiUrl,
       {
-        to: to,
-        message: `Your OTP is: ${otp}`,
-        sender: "Xirfadsan" // optional
+        recipients: [to],
+        message: `Your OTP code is: ${otp}`
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${API_KEY}`
+          "x-api-key": process.env.TEXTBEE_API_KEY
         }
       }
     );
 
     res.status(200).json({
-      message: "OTP SMS sent successfully",
-      response: response.data,
+      message: "OTP sent successfully via TextBee",
+      response: response.data
     });
   } catch (error) {
-    console.error("Error sending OTP SMS:", error.response ? error.response.data : error.message);
+    console.error("Error sending OTP via TextBee:", error.response ? error.response.data : error.message);
     res.status(500).json({
-      message: "Error sending OTP SMS",
-      error: error.response ? error.response.data : error.message,
+      message: "Error sending OTP via TextBee",
+      error: error.response ? error.response.data : error.message
     });
   }
 });
 
-module.exports = SendSmsRouter;
+module.exports = SmsRouter;
