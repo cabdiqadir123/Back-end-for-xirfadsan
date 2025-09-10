@@ -33,7 +33,7 @@ app.use('/api/privacy/', require('./Router/PrivacyRouter'));
 app.use('/api/subscriber/', require('./Router/SubscriberRouter'));
 app.use('/api/blog/', require('./Router/BlogRouter'));
 app.use('/api/send-email/', require('./Router/NodemailerRouter'));
-
+app.use('/api/send-sms/', require('./Router/SmsRouter'));
 // ------------------- HEARTBEAT -------------------
 const APP_URL = process.env.APP_URL; // Set this in Render environment variables
 
@@ -61,7 +61,8 @@ const heartbeatRoutes = [
     '/api/privacy/',
     '/api/subscriber/',
     '/api/blog/',
-    '/api/send-email/'
+    '/api/send-email/',
+    '/api/send-sms/'
 ];
 
 // Ping all API routes every 5 minutes to keep backend awake
