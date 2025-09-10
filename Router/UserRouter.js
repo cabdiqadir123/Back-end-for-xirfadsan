@@ -170,6 +170,20 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
   });
 });
 
+UserRouter.put('/editphone/:id', (req, res) => {
+  const id = req.params.id;
+  const { phone } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('update users set  phone= ? where id=?'
+    , [phone, id], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'updated' });
+      } else {
+        console.log(error);
+      }
+    });
+});
+
 UserRouter.put('/status/:id', (req, res) => {
   const id = req.params.id;
   const { status } = req.body;
