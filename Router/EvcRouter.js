@@ -43,7 +43,7 @@ PaymentRouter.post('/pay', async (req, res) => {
             headers: { "Content-Type": "application/json" },
         });
 
-        res.json(response.status);
+        res.json(response.data);
 
     } catch (error) {
         console.error("❌ Payment Error:", error.response ? error.response.data : error.message);
