@@ -2,10 +2,10 @@ const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
 
-const SmsRouter = express.Router();
+const SendSmsRouter = express.Router();
 
 // POST /api/send/sms
-SmsRouter.post("/otp", async (req, res) => {
+SendSmsRouter.post("/otp", async (req, res) => {
   const { to, otp } = req.body;
 
   if (!to || !otp) {
@@ -44,4 +44,4 @@ SmsRouter.post("/otp", async (req, res) => {
   }
 });
 
-module.exports = SmsRouter;
+module.exports = SendSmsRouter;
