@@ -34,7 +34,7 @@ app.use('/api/subscriber/', require('./Router/SubscriberRouter'));
 app.use('/api/blog/', require('./Router/BlogRouter'));
 app.use('/api/send-email/', require('./Router/NodemailerRouter'));
 
-z// ------------------- HEARTBEAT -------------------
+// ------------------- HEARTBEAT -------------------
 const APP_URL = process.env.APP_URL; // Set this in Render environment variables
 
 const heartbeatRoutes = [
