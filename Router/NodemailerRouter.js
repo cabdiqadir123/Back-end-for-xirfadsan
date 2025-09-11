@@ -56,4 +56,47 @@ EmailRouter.post("/otp", async (req, res) => {
   }
 });
 
+EmailRouter.post("/suppert", async (req, res) => {
+  const { to, name, email,sub } = req.body;
+
+  if (!to || !otp) {
+    return res.status(400).json({ message: "Missing required fields (to, otp)" });
+  }
+
+  try {
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      host: "mail.privateemail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // OTP Email options
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: "Contact us ",
+      text: `Name: ${name}\nEmail: ${email}\nMessage: ${sub}`, // fallback for plain text
+    };
+
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message: "OTP email sent successfully",
+      response: info.response,
+    });
+  } catch (error) {
+    console.error("Error sending OTP email:", error);
+    res.status(500).json({
+      message: "Error sending OTP email",
+      error: error,
+    });
+  }
+});
+
 module.exports = EmailRouter;
