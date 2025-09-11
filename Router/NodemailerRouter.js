@@ -57,11 +57,7 @@ EmailRouter.post("/otp", async (req, res) => {
 });
 
 EmailRouter.post("/suppert", async (req, res) => {
-  const { name, email, sub } = req.body;
-
-  if (!name || !email || !sub) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
+  const { to, name , email ,sub} = req.body;
 
   try {
     const transporter = nodemailer.createTransport({
@@ -75,9 +71,8 @@ EmailRouter.post("/suppert", async (req, res) => {
     });
 
     const mailOptions = {
-      from: `"Xirfadsan Contact 💬" <${process.env.EMAIL_USER}>`,
-      to: "xirfadsanxs@gmail.com", // ✅ your support email
-      replyTo: email, // ✅ reply goes to user
+      from: process.env.EMAIL_USER,
+      to: to, // ✅ your support email
       subject: `New Contact Message from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${sub}`,
       html: `
