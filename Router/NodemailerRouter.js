@@ -57,10 +57,13 @@ EmailRouter.post("/otp", async (req, res) => {
 });
 
 EmailRouter.post("/suppert", async (req, res) => {
-  const { name, email,sub } = req.body;
+  const { name, email, sub } = req.body;
+
+  if (!name || !email || !sub) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   try {
-    // Create transporter
     const transporter = nodemailer.createTransport({
       host: "mail.privateemail.com",
       port: 465,
@@ -71,26 +74,34 @@ EmailRouter.post("/suppert", async (req, res) => {
       },
     });
 
-    // OTP Email options
     const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: "xirfadsanxs@gmail.com",
-      subject: "Contact us ",
-      text: `Name: ${name}\nEmail: ${email}\nMessage: ${sub}`, // fallback for plain text
+      from: `"Xirfadsan Contact 💬" <${process.env.EMAIL_USER}>`,
+      to: "xirfadsanxs@gmail.com", // ✅ your support email
+      replyTo: email, // ✅ reply goes to user
+      subject: `New Contact Message from ${name}`,
+      text: `Name: ${name}\nEmail: ${email}\nMessage: ${sub}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; border:1px solid #ddd; border-radius:8px;">
+          <h2 style="color:#FE4C00;">📨 New Contact Request</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong></p>
+          <p style="padding:15px; background-color:#f9f9f9; border-radius:5px;">${sub}</p>
+        </div>
+      `,
     };
 
-    // Send email
     const info = await transporter.sendMail(mailOptions);
 
     res.status(200).json({
-      message: "OTP email sent successfully",
+      message: "Contact email sent successfully",
       response: info.response,
     });
   } catch (error) {
-    console.error("Error sending OTP email:", error);
+    console.error("Error sending contact email:", error);
     res.status(500).json({
-      message: "Error sending OTP email",
-      error: error,
+      message: "Error sending contact email",
+      error,
     });
   }
 });
