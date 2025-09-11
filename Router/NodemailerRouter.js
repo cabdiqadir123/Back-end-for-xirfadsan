@@ -57,7 +57,7 @@ EmailRouter.post("/otp", async (req, res) => {
 });
 
 EmailRouter.post("/suppert", async (req, res) => {
-  const { to, name, email,sub } = req.body;
+  const { name, email,sub } = req.body;
 
   if (!to || !otp) {
     return res.status(400).json({ message: "Missing required fields (to, otp)" });
@@ -78,7 +78,7 @@ EmailRouter.post("/suppert", async (req, res) => {
     // OTP Email options
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: to,
+      to: email,
       subject: "Contact us ",
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${sub}`, // fallback for plain text
     };
