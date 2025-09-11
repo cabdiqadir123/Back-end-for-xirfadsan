@@ -296,9 +296,9 @@ UserRouter.post('/login', (req, res) => {
 
 UserRouter.post('/profile', (req, res) => {
   try {
-    const { id, token } = req.body;
+    const { email, token } = req.body;
 
-    mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token,created_at FROM users WHERE id = ?', [id], (error, rows) => {
+    mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token,created_at FROM users WHERE email = ?', [email], (error, rows) => {
       if (error) {
         return res.status(500).json({ error: error.message });
       }
