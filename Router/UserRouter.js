@@ -255,7 +255,7 @@ UserRouter.post('/delete', (req, res) => {
 
 UserRouter.post('/login', (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { phone, password,fcmtoken } = req.body;
 
     mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token,created_at FROM users WHERE phone = ?', [phone], (error, rows) => {
       if (error) {
@@ -264,6 +264,9 @@ UserRouter.post('/login', (req, res) => {
 
       if (rows.length > 0) {
         const user = rows[0];
+        if(fcmtoken!==user.token){
+          res.json({ msg: "new phone" });
+        }
         if (password === user.password) {
           if (user.status === "Active") {
             res.status(200).json({
