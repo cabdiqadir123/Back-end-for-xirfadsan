@@ -59,10 +59,6 @@ EmailRouter.post("/otp", async (req, res) => {
 EmailRouter.post("/suppert", async (req, res) => {
   const { name, email,sub } = req.body;
 
-  if (!to || !otp) {
-    return res.status(400).json({ message: "Missing required fields (to, otp)" });
-  }
-
   try {
     // Create transporter
     const transporter = nodemailer.createTransport({
