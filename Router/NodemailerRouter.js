@@ -79,8 +79,8 @@ EmailRouter.post("/otp1", async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: to,
-      subject: "Your OTP Code",
-      text: `Your OTP code is: ${otp}`, // plain text fallback
+      subject: "Contct us",
+      text: `Supper and help`, // plain text fallback
       html: `
         <div style="font-family: Arial, sans-serif; text-align: center;">
           <h2>{${name}}</h2>
