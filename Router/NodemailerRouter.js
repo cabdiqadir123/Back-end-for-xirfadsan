@@ -78,7 +78,7 @@ EmailRouter.post("/suppert", async (req, res) => {
     // OTP Email options
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: email,
+      to: "support@xirfadsan.com",
       subject: "Contact us ",
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${sub}`, // fallback for plain text
     };
