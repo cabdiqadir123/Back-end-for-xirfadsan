@@ -38,50 +38,37 @@ app.use('/api/evc-pay/', require('./Router/EvcRouter'));
 
 // ------------------- HEARTBEAT -------------------
 const APP_URL = process.env.APP_URL; // Set this in Render environment variables
+const MAIN_ROUTE = '/api/user/'; // Only ping this route to wake the service
 
-const heartbeatRoutes = [
-    '/api/user/',
-    '/api/services/',
-    '/api/subservices/',
-    '/api/units/',
-    '/api/product/',
-    '/api/supplier/',
-    '/api/staff/',
-    '/api/freelancer/',
-    '/api/faq/',
-    '/api/Complaint/',
-    '/api/notification/',
-    '/api/testimonial/',
-    '/api/banner/',
-    '/api/booking/',
-    '/api/earning/',
-    '/api/discount/',
-    '/api/send/',
-    '/api/favour/',
-    '/api/review/',
-    '/api/terms/',
-    '/api/privacy/',
-    '/api/subscriber/',
-    '/api/blog/',
-    '/api/send-email/',
-    '/api/sms/',
-    '/api/evc-pay/'
-];
-
-// Ping all API routes every 5 minutes to keep backend awake
-if (APP_URL) {
-    setInterval(async () => {
-        console.log('--- Sending heartbeat to keep backend warm ---');
-        for (const route of heartbeatRoutes) {
-            try {
-                const res = await fetch(APP_URL + route);
-                console.log(`Pinged ${route} Status: ${res.status}`);
-            } catch (err) {
-                console.error(`Ping failed for ${route}:`, err);
-            }
-        }
-    }, 5 * 60 * 1000); // every 5 minutes
+// Check Somalia time (UTC+3) and active hours
+function isSomaliaActiveTime() {
+    const now = new Date();
+    const somaliaHour = now.getUTCHours() + 3; // UTC+3
+    const hour = somaliaHour >= 24 ? somaliaHour - 24 : somaliaHour;
+    return hour >= 5 && hour <= 22; // 5 AM - 10 PM
 }
+
+// Ping main route
+async function pingMainRoute() {
+    if (!APP_URL) return;
+    if (!isSomaliaActiveTime()) {
+        console.log(`[${new Date().toISOString()}] Outside active hours, skipping ping.`);
+        return;
+    }
+
+    try {
+        const res = await fetch(APP_URL + MAIN_ROUTE);
+        console.log(`[${new Date().toISOString()}] Pinged ${MAIN_ROUTE} Status: ${res.status}`);
+    } catch (err) {
+        console.error(`[${new Date().toISOString()}] Ping failed for ${MAIN_ROUTE}:`, err.message);
+    }
+}
+
+// Run every 14 minutes
+setInterval(pingMainRoute, 14 * 60 * 1000);
+
+// Optional: ping immediately at startup
+pingMainRoute();
 
 // ------------------- START SERVER -------------------
 app.listen(app.get('port'), () => {
