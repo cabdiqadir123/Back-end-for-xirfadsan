@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require("cors");
+const fetch = require('node-fetch'); // npm install node-fetch@2
 
 const app = express();
 
@@ -34,6 +35,53 @@ app.use('/api/blog/', require('./Router/BlogRouter'));
 app.use('/api/send-email/', require('./Router/NodemailerRouter'));
 app.use('/api/sms/', require('./Router/SmsRouter'));
 app.use('/api/evc-pay/', require('./Router/EvcRouter'));
+
+// ------------------- HEARTBEAT -------------------
+const APP_URL = process.env.APP_URL; // Set this in Render environment variables
+
+const heartbeatRoutes = [
+    '/api/user/',
+    '/api/services/',
+    '/api/subservices/',
+    '/api/units/',
+    '/api/product/',
+    '/api/supplier/',
+    '/api/staff/',
+    '/api/freelancer/',
+    '/api/faq/',
+    '/api/Complaint/',
+    '/api/notification/',
+    '/api/testimonial/',
+    '/api/banner/',
+    '/api/booking/',
+    '/api/earning/',
+    '/api/discount/',
+    '/api/send/',
+    '/api/favour/',
+    '/api/review/',
+    '/api/terms/',
+    '/api/privacy/',
+    '/api/subscriber/',
+    '/api/blog/',
+    '/api/send-email/',
+    '/api/sms/',
+    '/api/evc-pay/'
+];
+
+// Ping all API routes every 5 minutes to keep backend awake
+if (APP_URL) {
+    setInterval(async () => {
+        console.log('--- Sending heartbeat to keep backend warm ---');
+        for (const route of heartbeatRoutes) {
+            try {
+                const res = await fetch(APP_URL + route);
+                console.log(`Pinged ${route} Status: ${res.status}`);
+            } catch (err) {
+                console.error(`Ping failed for ${route}:`, err);
+            }
+        }
+    }, 5 * 60 * 1000); // every 5 minutes
+}
 
 // ------------------- START SERVER -------------------
 app.listen(app.get('port'), () => {
