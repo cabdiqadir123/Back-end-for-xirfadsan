@@ -14,10 +14,10 @@ PaymentRouter.post('/pay', async (req, res) => {
         const { phoneNumber, price } = req.body;
 
         const url = "https://api.waafipay.net/asm";
-
+        const now = Date.now().toString();
         const data = {
             schemaVersion: "1.0",
-            requestId: "10111331033",
+            requestId: now,
             timestamp: new Date().toISOString(), // sax timestamp
             channelName: "WEB",
             serviceName: "API_PURCHASE",
