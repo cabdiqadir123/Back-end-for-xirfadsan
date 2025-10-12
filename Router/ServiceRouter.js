@@ -71,20 +71,46 @@ ServiceRouter.get("/secondry_image/:id", (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-ServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'secondry_image', maxCount: 1 }
-]), (req, res) => {
-  const { name, color,created_at } = req.body;
-  const imageBuffer1 = req.files && req.files.image ? req.files.image[0].buffer.toString("utf-8") : null;
-  const imageBuffer2 = req.files && req.files.secondry_image ? req.files.secondry_image[0].buffer : null;
-  mysqlconnection.query('insert into services(name,image,secondry_image,color,created_at) values(?,?,?,?,?);',
-    [name, imageBuffer1, imageBuffer2, color,created_at], (error, rows, fields) => {
-      if (!error) {
-        res.json({ status: 'inserted' });
-      } else {
-        console.log(error);
+ServiceRouter.post(
+  '/add',
+  upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'secondry_image', maxCount: 1 }
+  ]),
+  (req, res) => {
+    const { name, color, created_at } = req.body;
+    const imageBuffer1 = req.files?.image ? req.files.image[0].buffer.toString("utf-8") : null;
+    const imageBuffer2 = req.files?.secondry_image ? req.files.secondry_image[0].buffer : null;
+
+    mysqlconnection.query(
+      'INSERT INTO services(name, image, secondry_image, color, created_at) VALUES (?, ?, ?, ?, ?);',
+      [name, imageBuffer1, imageBuffer2, color, created_at],
+      (error, result) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ error: 'Failed to insert service' });
+        }
+
+        // result.insertId gives the new ID
+        const insertedId = result.insertId;
+
+        // Fetch the newly inserted record and send it back
+        mysqlconnection.query(
+          'SELECT * FROM services WHERE id = ?',
+          [insertedId],
+          (err, rows) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ error: 'Failed to fetch new service' });
+            }
+            res.json(rows[0]); // send back the full new service
+          }
+        );
       }
-    });
-});
+    );
+  }
+);
+
 
 ServiceRouter.put(
   "/update/:id",
