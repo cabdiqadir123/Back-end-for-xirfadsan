@@ -71,20 +71,34 @@ ServiceRouter.get("/secondry_image/:id", (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-ServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'secondry_image', maxCount: 1 }
-]), (req, res) => {
-  const { name, color,created_at } = req.body;
-  const imageBuffer1 = req.files && req.files.image ? req.files.image[0].buffer.toString("utf-8") : null;
-  const imageBuffer2 = req.files && req.files.secondry_image ? req.files.secondry_image[0].buffer : null;
-  mysqlconnection.query('insert into services(name,image,secondry_image,color,created_at) values(?,?,?,?,?);',
-    [name, imageBuffer1, imageBuffer2, color,created_at], (error, rows, fields) => {
-      if (!error) {
-        res.json({ status: 'inserted' });
-      } else {
-        console.log(error);
+ServiceRouter.post(
+  '/add',
+  upload.fields([{ name: 'image', maxCount: 1 }, { name: 'secondry_image', maxCount: 1 }]),
+  (req, res) => {
+    const { name, color, created_at } = req.body;
+    const imageBuffer1 = req.files?.image ? req.files.image[0].buffer.toString("utf-8") : null;
+    const imageBuffer2 = req.files?.secondry_image ? req.files.secondry_image[0].buffer.toString("utf-8") : null;
+
+    const sql = 'INSERT INTO services (name, image, secondry_image, color, created_at) VALUES (?, ?, ?, ?, ?)';
+    mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color, created_at], (error, result) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database insert failed' });
       }
+
+      // Return the inserted record details
+      res.json({
+        id: result.insertId,
+        name,
+        color,
+        created_at,
+        status: 'active', // or whatever your default is
+        image: imageBuffer1,
+        secondry_image: imageBuffer2
+      });
     });
-});
+  }
+);
 
 ServiceRouter.put(
   "/update/:id",
