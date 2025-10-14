@@ -92,7 +92,6 @@ ServiceRouter.post(
         name,
         color,
         created_at,
-        status: 'active', // or whatever your default is
         image: imageBuffer1,
         secondry_image: imageBuffer2
       });
