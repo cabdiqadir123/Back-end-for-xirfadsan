@@ -82,13 +82,13 @@ ServiceRouter.post(
     const sql = 'INSERT INTO services (name, image, secondry_image, color, created_at) VALUES (?, ?, ?, ?, ?)';
     mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color, created_at], (error, result) => {
       if (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Database insert failed' });
+        console.error('MySQL insert error:', error);
+        return res.status(500).json({ error: 'Database insert failed', details: error.message });
       }
 
-      // Return the inserted record details
       res.json({
-        id: 10000,
+        status: 'inserted',
+        id: result.insertId, // actual auto-increment ID
         name,
         color,
         created_at,
