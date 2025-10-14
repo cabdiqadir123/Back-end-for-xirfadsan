@@ -79,8 +79,8 @@ ServiceRouter.post(
     const imageBuffer1 = req.files?.image ? req.files.image[0].buffer.toString("utf-8") : null;
     const imageBuffer2 = req.files?.secondry_image ? req.files.secondry_image[0].buffer.toString("utf-8") : null;
 
-    const sql = 'INSERT INTO services (name, image, secondry_image, color, created_at) VALUES (?, ?, ?, ?, ?)';
-    mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color, created_at], (error, result) => {
+    const sql = 'INSERT INTO services (name,  color, created_at) VALUES (?, ?, ?)';
+    mysqlconnection.query(sql, [name, color, created_at], (error, result) => {
       if (error) {
         console.error(error);
         return res.status(500).json({ error: 'Database insert failed' });
