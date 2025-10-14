@@ -88,7 +88,7 @@ ServiceRouter.post(
 
       // Return the inserted record details
       res.json({
-        id: result.insertId,
+        id: 10000,
         name,
         color,
         created_at,
