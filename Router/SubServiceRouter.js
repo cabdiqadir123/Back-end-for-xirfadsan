@@ -100,16 +100,10 @@ SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }]), (
   mysqlconnection.query(query,
     [sub_service, description, service_id, price, imageBuffer, created_at
     ], (error, rows, fields) => {
-      if (!error) {
-        res.json({ status: 'inserted' });
-      } else {
-        console.log(error);
+      if (error) {
+        console.error('MySQL insert error:', error);
+        return res.status(500).json({ error: 'Database insert failed', details: error.message });
       }
-
-      res.json({
-        status: 'inserted',
-        id: result.insertId, // actual auto-increment ID
-      });
     });
 });
 
