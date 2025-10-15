@@ -77,7 +77,7 @@ ServiceRouter.post(
   (req, res) => {
     const { name, color, created_at } = req.body;
     const imageBuffer1 = req.files?.image ? req.files.image[0].buffer.toString("utf-8") : null;
-    const imageBuffer2 = req.files?.secondry_image ? req.files.secondry_image[0].buffer.toString("utf-8") : null;
+    const imageBuffer2 = req.files?.secondry_image ? req.files.secondry_image[0].buffer : null;
 
     const sql = 'INSERT INTO services (name, image, secondry_image, color, created_at) VALUES (?, ?, ?, ?, ?)';
     mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color, created_at], (error, result) => {
