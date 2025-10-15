@@ -21,7 +21,7 @@ SubServiceRouter.get('/all', (req, res) => {
 });
 
 SubServiceRouter.get('/all_app/:id', (req, res) => {
-   const id = req.params.id;
+  const id = req.params.id;
   mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description,sub_services.service_id,services.name, COALESCE(favourite.id, 0) AS favourite_id, COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services inner join services on services.service_id  =sub_services.service_id LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id AND favourite.user_id = ?', [id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
@@ -94,16 +94,24 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }]), (req, res) => {
-  const { sub_service,description, service_id, price,created_at } = req.body;
+  const { sub_service, description, service_id, price, created_at } = req.body;
   const imageBuffer = req.files && req.files.image ? req.files.image[0].buffer : null;
   const query = 'insert into sub_services(sub_service,description,service_id,price,image,created_at) values(?,?,(select service_id from services where name=?),?,?,?);';
   mysqlconnection.query(query,
-    [sub_service,description, service_id, price, imageBuffer,created_at
+    [sub_service, description, service_id, price, imageBuffer, created_at
     ], (error, rows, fields) => {
       if (!error) {
-        res.json({ status: 'inserted' });
+        res.json({
+          status: 'inserted',
+          id: result.insertId, // actual auto-increment ID
+          name,
+          color,
+          created_at,
+        });
       } else {
         console.log(error);
+        console.error('MySQL insert error:', error);
+        res.status(500).json({ error: 'Database insert failed', details: error.message });
       }
     });
 });
@@ -115,7 +123,7 @@ SubServiceRouter.put(
   ]),
   (req, res) => {
     const id = req.params.id;
-    const { sub_service, description ,service_id,	price} = req.body;
+    const { sub_service, description, service_id, price } = req.body;
 
     // Collect file buffers only if present
     const fileFields = {
@@ -124,7 +132,7 @@ SubServiceRouter.put(
 
     // Start query and values
     let query = "UPDATE sub_services SET sub_service = ?, description = ? , service_id=(select service_id from services where name=?),	price=?";
-    const values = [sub_service, description,service_id,	price];
+    const values = [sub_service, description, service_id, price];
 
     // Dynamically append file fields to SQL and values
     for (const [key, buffer] of Object.entries(fileFields)) {
@@ -154,10 +162,10 @@ SubServiceRouter.put(
 
 SubServiceRouter.put('/updaterating/:id', (req, res) => {
   const id = req.params.id;
-  const { rating_service , num_of_rating } = req.body;
+  const { rating_service, num_of_rating } = req.body;
   console.log(req.body);
   mysqlconnection.query('update sub_services set rating_service=?,num_of_rating=? where sub_service_id=?'
-    , [rating_service,num_of_rating,id], (error, rows, fields) => {
+    , [rating_service, num_of_rating, id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
       } else {
