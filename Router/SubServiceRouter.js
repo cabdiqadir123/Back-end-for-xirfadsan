@@ -104,9 +104,6 @@ SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }]), (
         res.json({
           status: 'inserted',
           id: result.insertId, // actual auto-increment ID
-          name,
-          color,
-          created_at,
         });
       } else {
         console.log(error);
