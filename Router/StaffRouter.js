@@ -47,11 +47,26 @@ StaffRouter.get("/image/:id", (req, res) => {
 });
 
 StaffRouter.post('/add', (req, res) => {
-    const { name, service_id,available,created_at } = req.body;
+    const { name, service_id, available, created_at } = req.body;
     console.log(req.body);
     mysqlconnection.query(
         'insert into staff(user_id,service_id,available,created_at) values((select id from users where name=?),(select service_id from services where name=?),?,?);',
-        [name, service_id,available,created_at], (error, rows, fields) => {
+        [name, service_id, available, created_at], (error, rows, fields) => {
+            if (!error) {
+                res.json({ status: 'inserted' });
+            } else {
+                console.log(error);
+            }
+        });
+});
+
+// for new typescript dashboard
+StaffRouter.post('/addNew', (req, res) => {
+    const { name, service_id, available, created_at } = req.body;
+    console.log(req.body);
+    mysqlconnection.query(
+        'insert into staff(user_id,service_id,available,created_at) values((select id from users where name=?),?,?,?);',
+        [name, service_id, available, created_at], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {
@@ -62,10 +77,10 @@ StaffRouter.post('/add', (req, res) => {
 
 StaffRouter.put("/update/:id", (req, res) => {
     const id = req.params.id;
-    const { service_id,available } = req.body;
+    const { service_id, available } = req.body;
     console.log(req.body);
     mysqlconnection.query('update staff set service_id=(select service_id from services where name=?),available=? where staff_id=?'
-        , [service_id,available,id], (error, rows, fields) => {
+        , [service_id, available, id], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'updated' });
             } else {
