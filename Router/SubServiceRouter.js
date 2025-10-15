@@ -93,8 +93,24 @@ SubServiceRouter.get("/image_byname/:id", (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+SubServiceRouter.post('/add', upload.fields([{ name: 'image', maxCount: 1 }]), (req, res) => {
+  const { sub_service, description, service_id, price, created_at } = req.body;
+  const imageBuffer = req.files && req.files.image ? req.files.image[0].buffer : null;
+  const query = 'insert into sub_services(sub_service,description,service_id,price,image,created_at) values(?,?,(select service_id from services where name=?),?,?,?);';
+  mysqlconnection.query(query,
+    [sub_service, description, service_id, price, imageBuffer, created_at
+    ], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'inserted' });
+      } else {
+        console.log(error);
+      }
+    });
+});
+
+// for typescript dashboard
 SubServiceRouter.post(
-  '/add',
+  '/add_new',
   upload.fields([{ name: 'image', maxCount: 1 }]),
   (req, res) => {
     const { sub_service, description, service_id, price, created_at } = req.body;
@@ -103,7 +119,7 @@ SubServiceRouter.post(
     const query = `
       INSERT INTO sub_services 
       (sub_service, description, service_id, price, image, created_at) 
-      VALUES (?, ?, (SELECT service_id FROM services WHERE name = ?), ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
     mysqlconnection.query(
