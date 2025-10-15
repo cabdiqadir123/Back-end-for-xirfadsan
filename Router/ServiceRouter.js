@@ -130,7 +130,7 @@ ServiceRouter.put(
     mysqlconnection.query(sql, values, (err, result) => {
       if (err) {
         console.error('MySQL update error:', err);
-        return res.status(500).json({ error: 'Database update failed', details: error.message });
+        return res.status(500).json({ error: 'Database update failed', details: err.message });
       }
 
       if (result.affectedRows === 0) {
