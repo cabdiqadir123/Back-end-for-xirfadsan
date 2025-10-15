@@ -94,7 +94,7 @@ StaffRouter.put("/updateNew/:id", (req, res) => {
     const id = req.params.id;
     const { service_id, available } = req.body;
     console.log(req.body);
-    mysqlconnection.query('update staff set service_id=?,available=? where staff_id=?'
+    mysqlconnection.query('update staff set service_id=?,available=? where user_id=?'
         , [service_id, available, id], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'updated' });
