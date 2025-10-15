@@ -188,51 +188,6 @@ SubServiceRouter.put(
   }
 );
 
-// update api for new Typescript dashboard
-SubServiceRouter.put(
-  "/update_new/:id",
-  upload.fields([
-    { name: 'image', maxCount: 1 },
-  ]),
-  (req, res) => {
-    const id = req.params.id;
-    const { sub_service, description, service_id, price } = req.body;
-
-    // Collect file buffers only if present
-    const fileFields = {
-      image: req.files?.image?.[0]?.buffer,
-    };
-
-    // Start query and values
-    let query = "UPDATE sub_services SET sub_service = ?, description = ? , service_id=?,	price=?";
-    const values = [sub_service, description, service_id, price];
-
-    // Dynamically append file fields to SQL and values
-    for (const [key, buffer] of Object.entries(fileFields)) {
-      if (buffer) {
-        query += `, ${key} = ?`;
-        values.push(buffer);
-      }
-    }
-
-    query += " WHERE sub_service_id = ?";
-    values.push(id);
-
-    mysqlconnection.query(query, values, (err, result) => {
-      if (err) {
-        console.error("MySQL Error:", err);
-        return res.status(500).send("Database update failed",err);
-      }
-
-      if (result.affectedRows === 0) {
-        return res.status(404).send("Sub-service not found");
-      }
-
-      res.status(200).send("Sub-service updated successfully");
-    });
-  }
-);
-
 SubServiceRouter.put('/updaterating/:id', (req, res) => {
   const id = req.params.id;
   const { rating_service, num_of_rating } = req.body;
