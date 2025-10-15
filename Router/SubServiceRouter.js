@@ -220,11 +220,7 @@ SubServiceRouter.put(
     mysqlconnection.query(query, values, (err, result) => {
       if (err) {
         console.error("MySQL Error:", err);
-        return res.status(500).json({
-          error: 'Database insert failed',
-          details: err.message,
-          body: req.body, // 👈 Sends back the body in JSON response
-        });
+        return res.status(500).json({ error: 'Database update failed', details: err.message });
       }
 
       if (result.affectedRows === 0) {
