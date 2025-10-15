@@ -179,6 +179,7 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
       sex,
       role,
       status: "user updated successfully",
+      body: req.body
     });
   });
 });
