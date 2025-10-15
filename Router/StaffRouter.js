@@ -117,4 +117,18 @@ StaffRouter.post('/delete', (req, res) => {
         });
 });
 
+// for new typescript dashboard 
+StaffRouter.post('/delete', (req, res) => {
+    const { staff_id } = req.body;
+    console.log(req.body);
+    mysqlconnection.query('delete from staff where user_id=?'
+        , [staff_id], (error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                res.json({ status: error });
+            }
+        });
+});
+
 module.exports = StaffRouter;
