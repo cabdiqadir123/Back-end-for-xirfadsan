@@ -137,13 +137,12 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
 UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
   const id = req.params.id;
   const { name, email, password, phone, address, sex, role, status } = req.body;
-
   const imageBuffer = req.file?.buffer;
 
-  // Build dynamic SQL
+  // Build dynamic SQL query
   let query = `
     UPDATE users 
-    SET name= ?, email= ?, password= ?,phone= ?, address=?, sex= ?,role= ?,status=?
+    SET name = ?, email = ?, password = ?, phone = ?, address = ?, sex = ?, role = ?, status = ?
   `;
   const values = [name, email, password, phone, address, sex, role, status];
 
@@ -158,17 +157,32 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
 
   mysqlconnection.query(query, values, (err, result) => {
     if (err) {
-      console.error(err);
-      return res.status(500).json({ error: err.message });
+      console.error("❌ MySQL Error:", err);
+      return res.status(500).json({
+        error: "Database update failed",
+        details: err.message,
+      });
     }
 
     if (result.affectedRows === 0) {
-      return res.status(404).send("User not found");
+      return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).send("user updated successfully");
+    // ✅ Return full JSON response
+    res.status(200).json({
+      id,
+      name,
+      email,
+      password,
+      phone,
+      address,
+      sex,
+      role,
+      status: "user updated successfully",
+    });
   });
 });
+
 
 UserRouter.put('/editphone/:id', (req, res) => {
   const id = req.params.id;

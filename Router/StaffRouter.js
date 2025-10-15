@@ -89,6 +89,21 @@ StaffRouter.put("/update/:id", (req, res) => {
         });
 });
 
+// for updating of new typescript dashboard
+StaffRouter.put("/updateNew/:id", (req, res) => {
+    const id = req.params.id;
+    const { service_id, available } = req.body;
+    console.log(req.body);
+    mysqlconnection.query('update staff set service_id=?,available=? where staff_id=?'
+        , [service_id, available, id], (error, rows, fields) => {
+            if (!error) {
+                res.json({ status: 'updated' });
+            } else {
+                console.log(error);
+            }
+        });
+});
+
 StaffRouter.post('/delete', (req, res) => {
     const { staff_id } = req.body;
     console.log(req.body);
