@@ -20,6 +20,17 @@ DiscountRouter.get('/all', (req, res) => {
     });
 });
 
+// for new type script dashboard
+DiscountRouter.get('/all', (req, res) => {
+    mysqlconnection.query('select id, services.service_id as sub_service_id, services.name AS sub_service,services.service_id,services.name AS servicename,services.service_id as price,promocode,title,discount.description,type,per,min_order,usage_limit,status,end_date,discount.color,discount.created_at from discount INNER JOIN services on discount.service_id =services.service_id ', (error, rows, fields) => {
+        if (!error) {
+            res.json(rows);
+        } else {
+            console.log(error);
+        }
+    });
+});
+
 DiscountRouter.get("/image/:id", (req, res) => {
     const imageId = req.params.id;
     const query = "SELECT image FROM discount WHERE id=?";
