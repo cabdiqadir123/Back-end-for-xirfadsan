@@ -69,6 +69,7 @@ DiscountRouter.post("/addNew", upload.single("image"), (req, res) => {
                     status: "error",
                     message: "Error saving promo code to database",
                     error: err.message,
+                    body: req.body
                 });
             }
 
@@ -77,7 +78,6 @@ DiscountRouter.post("/addNew", upload.single("image"), (req, res) => {
                 status: "success",
                 message: "Promo code created successfully",
                 id: result.insertId, // ✅ Return the new promo code's ID
-                body: req.body
             });
         }
     );
