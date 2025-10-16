@@ -75,12 +75,12 @@ ServiceRouter.post(
   '/add',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'secondry_image', maxCount: 1 }]),
   (req, res) => {
-    const { name, color, created_at } = req.body;
+    const { name, color,status, created_at } = req.body;
     const imageBuffer1 = req.files?.image ? req.files.image[0].buffer.toString("utf-8") : null;
     const imageBuffer2 = req.files?.secondry_image ? req.files.secondry_image[0].buffer : null;
 
-    const sql = 'INSERT INTO services (name, image, secondry_image, color, created_at) VALUES (?, ?, ?, ?, ?)';
-    mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color, created_at], (error, result) => {
+    const sql = 'INSERT INTO services (name, image, secondry_image, color,status, created_at) VALUES (?, ?, ?, ?, ?,?)';
+    mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color,status, created_at], (error, result) => {
       if (error) {
         console.error('MySQL insert error:', error);
         return res.status(500).json({ error: 'Database insert failed', details: error.message });
@@ -91,6 +91,7 @@ ServiceRouter.post(
         id: result.insertId, // actual auto-increment ID
         name,
         color,
+        status,
         created_at,
       });
     });
@@ -105,14 +106,14 @@ ServiceRouter.put(
   ]),
   (req, res) => {
     const id = req.params.id;
-    const { name, color } = req.body;
+    const { name, color,status } = req.body;
 
     const imageBuffer = req.files?.image?.[0]?.buffer.toString("utf-8");
     const secondryImageBuffer = req.files?.secondry_image?.[0]?.buffer;
 
     // Start SQL and values
-    let sql = "UPDATE services SET name = ?, color = ?";
-    const values = [name, color];
+    let sql = "UPDATE services SET name = ?, color = ?, status=?";
+    const values = [name, color,status];
 
     // Conditionally add image fields
     if (imageBuffer) {
