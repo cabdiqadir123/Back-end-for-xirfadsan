@@ -62,7 +62,7 @@ ServiceRouter.get("/image/:id", (req, res) => {
 
   mysqlconnection.query(query, [id], (err, results) => {
     if (err) {
-      console.error("❌ Error fetching image:", err);
+      console.error("❌ Error fetching SVG image:", err);
       return res.status(500).json({
         status: "error",
         message: "Error fetching image",
@@ -71,7 +71,7 @@ ServiceRouter.get("/image/:id", (req, res) => {
     }
 
     if (results.length === 0 || !results[0].image) {
-      // If there's no image, return an inline SVG placeholder
+      // Return placeholder SVG if no image
       res.setHeader("Content-Type", "image/svg+xml");
       return res.send(`
         <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
@@ -83,14 +83,15 @@ ServiceRouter.get("/image/:id", (req, res) => {
       `);
     }
 
-    const imageBuffer = results[0].image;
-    res.writeHead(200, {
-      "Content-Type": "image/jpeg", // you can detect type if needed
-      "Content-Length": imageBuffer.length,
-    });
-    res.end(imageBuffer);
+    // Image is stored as a raw SVG string in LONGTEXT
+    const svgData = results[0].image.toString("utf-8");
+
+    // Send as SVG
+    res.setHeader("Content-Type", "image/svg+xml");
+    res.send(svgData);
   });
 });
+
 
 ServiceRouter.get("/secondry_image/:id", (req, res) => {
   const imageId = req.params.id;
