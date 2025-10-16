@@ -41,11 +41,11 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 DiscountRouter.post("/add", upload.single("image"), (req, res) => {
-    const { sub_service_id, promocode, description, per, end_date,color ,created_at} = req.body;
+    const { sub_service_id, promocode, description, per, end_date, color, created_at } = req.body;
     const imageBuffer = req.file.buffer;
     const query = "INSERT INTO discount (sub_service_id, promocode, description, per, image, end_date,color,created_at) VALUES ((select sub_service_id from sub_services where sub_service=?),?,?,?,?,?,?,?)";
 
-    mysqlconnection.query(query, [sub_service_id, promocode, description, per, imageBuffer, end_date,color,created_at], (err, result) => {
+    mysqlconnection.query(query, [sub_service_id, promocode, description, per, imageBuffer, end_date, color, created_at], (err, result) => {
         if (err) {
             return res.status(500).send("Error saving image to database");
         }
@@ -53,40 +53,69 @@ DiscountRouter.post("/add", upload.single("image"), (req, res) => {
     });
 });
 
+// for new typescript dashboard
+DiscountRouter.post("/addNew", upload.single("image"), (req, res) => {
+    const { service_id, promocode, title, description, type, per, min_order, usage_limit, status, end_date, color, created_at } = req.body;
+    const imageBuffer = req.file.buffer;
+    const query = "INSERT INTO discount (service_id, promocode,title, description,type, per,min_order,usage_limit,status, image, end_date,color,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+    mysqlconnection.query(
+        query,
+        [service_id, promocode, title, description, type, per, min_order, usage_limit, status, imageBuffer, end_date, color, created_at],
+        (err, result) => {
+            if (err) {
+                console.error("❌ Error saving promo code:", err);
+                return res.status(500).json({
+                    status: "error",
+                    message: "Error saving promo code to database",
+                    error: err.message,
+                });
+            }
+
+            // ✅ Successfully inserted
+            res.status(200).json({
+                status: "success",
+                message: "Promo code created successfully",
+                id: result.insertId, // ✅ Return the new promo code's ID
+            });
+        }
+    );
+});
+
 DiscountRouter.put("/update/:id", upload.single("image"), (req, res) => {
-  const id = req.params.id;
-  const { sub_service_id, promocode, description, per, end_date, color } = req.body;
+    const id = req.params.id;
+    const { sub_service_id, promocode, description, per, end_date, color } = req.body;
 
-  const imageBuffer = req.file?.buffer;
+    const imageBuffer = req.file?.buffer;
 
-  // Build dynamic SQL
-  let query = `
+    // Build dynamic SQL
+    let query = `
     UPDATE discount 
     SET sub_service_id = (select sub_service_id from sub_services where sub_service=?), promocode = ?, description = ?, per = ?, end_date = ?, color = ?
   `;
-  const values = [sub_service_id, promocode, description, per, end_date, color];
+    const values = [sub_service_id, promocode, description, per, end_date, color];
 
-  // Only update image if a new one is uploaded
-  if (imageBuffer) {
-    query += `, image = ?`;
-    values.push(imageBuffer);
-  }
-
-  query += ` WHERE id = ?`;
-  values.push(id);
-
-  mysqlconnection.query(query, values, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error updating the discount");
+    // Only update image if a new one is uploaded
+    if (imageBuffer) {
+        query += `, image = ?`;
+        values.push(imageBuffer);
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).send("Discount not found");
-    }
+    query += ` WHERE id = ?`;
+    values.push(id);
 
-    res.status(200).send("Discount updated successfully");
-  });
+    mysqlconnection.query(query, values, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Error updating the discount");
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).send("Discount not found");
+        }
+
+        res.status(200).send("Discount updated successfully");
+    });
 });
 
 
