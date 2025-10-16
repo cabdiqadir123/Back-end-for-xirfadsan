@@ -140,7 +140,7 @@ DiscountRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
     // Build dynamic SQL
     let query = `
     UPDATE discount 
-    SET service_id = ?, promocode = ?,title=?, description = ?,type, per = ?,min_order=?,usage_limit=?,status=?, end_date = ?, color = ?
+    SET service_id = ?, promocode = ?,title=?, description = ?,type=?, per = ?,min_order=?,usage_limit=?,status=?, end_date = ?, color = ?
   `;
     const values = [service_id, promocode, title, description, type, per, min_order, usage_limit, status, end_date, color];
 
