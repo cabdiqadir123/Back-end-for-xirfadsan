@@ -120,7 +120,7 @@ DiscountRouter.put("/update/:id", upload.single("image"), (req, res) => {
 });
 
 // for new typescript dashboard
-DiscountRouter.put("/update/:id", upload.single("image"), (req, res) => {
+DiscountRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
     const id = req.params.id;
     const { service_id, promocode, title, description, type, per, min_order, usage_limit, status, end_date, color } = req.body;
 
