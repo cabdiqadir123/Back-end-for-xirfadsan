@@ -56,42 +56,6 @@ ServiceRouter.get("/getbyservice/all/:id", (req, res) => {
 //   });
 // });
 
-ServiceRouter.get("/image/:id", (req, res) => {
-  const id = req.params.id;
-  const query = "SELECT image FROM services WHERE service_id = ?";
-
-  mysqlconnection.query(query, [id], (err, results) => {
-    if (err) {
-      console.error("❌ Error fetching image:", err);
-      return res.status(500).json({
-        status: "error",
-        message: "Error fetching image",
-        error: err.message,
-      });
-    }
-
-    if (results.length === 0 || !results[0].image) {
-      // If there's no image, return an inline SVG placeholder
-      res.setHeader("Content-Type", "image/svg+xml");
-      return res.send(`
-        <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100" height="100" fill="#f9f9f9" />
-          <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#999" font-size="12">
-            No Image
-          </text>
-        </svg>
-      `);
-    }
-
-    const imageBuffer = results[0].secondry_image;
-    res.writeHead(200, {
-      "Content-Type": "image/jpeg", // you can detect type if needed
-      "Content-Length": imageBuffer.length,
-    });
-    res.end(imageBuffer);
-  });
-});
-
 ServiceRouter.get("/secondry_image/:id", (req, res) => {
   const imageId = req.params.id;
   const query = "SELECT secondry_image FROM services WHERE service_id=?";
@@ -111,12 +75,12 @@ ServiceRouter.post(
   '/add',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'secondry_image', maxCount: 1 }]),
   (req, res) => {
-    const { name, color, status, created_at } = req.body;
+    const { name, color,status, created_at } = req.body;
     const imageBuffer1 = req.files?.image ? req.files.image[0].buffer.toString("utf-8") : null;
     const imageBuffer2 = req.files?.secondry_image ? req.files.secondry_image[0].buffer : null;
 
     const sql = 'INSERT INTO services (name, image, secondry_image, color,status, created_at) VALUES (?, ?, ?, ?, ?,?)';
-    mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color, status, created_at], (error, result) => {
+    mysqlconnection.query(sql, [name, imageBuffer1, imageBuffer2, color,status, created_at], (error, result) => {
       if (error) {
         console.error('MySQL insert error:', error);
         return res.status(500).json({ error: 'Database insert failed', details: error.message });
@@ -142,14 +106,14 @@ ServiceRouter.put(
   ]),
   (req, res) => {
     const id = req.params.id;
-    const { name, color, status } = req.body;
+    const { name, color,status } = req.body;
 
     const imageBuffer = req.files?.image?.[0]?.buffer.toString("utf-8");
     const secondryImageBuffer = req.files?.secondry_image?.[0]?.buffer;
 
     // Start SQL and values
     let sql = "UPDATE services SET name = ?, color = ?, status=?";
-    const values = [name, color, status];
+    const values = [name, color,status];
 
     // Conditionally add image fields
     if (imageBuffer) {
