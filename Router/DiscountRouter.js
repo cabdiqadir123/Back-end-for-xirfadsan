@@ -119,6 +119,52 @@ DiscountRouter.put("/update/:id", upload.single("image"), (req, res) => {
     });
 });
 
+// for new typescript dashboard
+DiscountRouter.put("/update/:id", upload.single("image"), (req, res) => {
+    const id = req.params.id;
+    const { service_id, promocode, title, description, type, per, min_order, usage_limit, status, end_date, color } = req.body;
+
+    const imageBuffer = req.file?.buffer;
+
+    // Build dynamic SQL
+    let query = `
+    UPDATE discount 
+    SET service_id = ?, promocode = ?,title=?, description = ?,type, per = ?,min_order=?,usage_limit=?,status=?, end_date = ?, color = ?
+  `;
+    const values = [service_id, promocode, title, description, type, per, min_order, usage_limit, status, end_date, color];
+
+    // Only update image if a new one is uploaded
+    if (imageBuffer) {
+        query += `, image = ?`;
+        values.push(imageBuffer);
+    }
+
+    query += ` WHERE id = ?`;
+    values.push(id);
+
+    mysqlconnection.query(query, values, (err, result) => {
+        if (result.affectedRows === 0) {
+            return res.status(404).send("Discount not found");
+        }
+
+        if (err) {
+            console.error("❌ Error updated promo code:", err);
+            return res.status(500).json({
+                status: "error",
+                message: "Error updated promo code to database",
+                error: err.message,
+                body: req.body
+            });
+        }
+
+        // ✅ Successfully updated
+        res.status(200).json({
+            status: "success",
+            message: "Promo code updated successfully",
+            id: result.insertId, // ✅ Return the new promo code's ID
+        });
+    });
+});
 
 DiscountRouter.post('/delete', (req, res) => {
     const { id } = req.body;
