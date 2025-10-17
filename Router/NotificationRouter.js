@@ -25,11 +25,21 @@ NotificationRouter.post('/add', (req, res) => {
   mysqlconnection.query(
     'insert into notifications(from_type,from_id,recipient_role,user_id,title,message,hasButton,hasBook_id,hasBook_started,created_at) values(?,?,?,?,?,?,?,?,?,?);',
     [from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at], (error, rows, fields) => {
-      if (!error) {
-        res.json({ status: 'inserted' });
-      } else {
-        console.log(error);
+      if (err) {
+        return res.status(500).json({
+          status: "error",
+          message: "Error updated promo code to database",
+          error: err.message,
+          body: req.body
+        });
       }
+
+      // ✅ Successfully updated
+      res.status(200).json({
+        status: "success",
+        message: "Promo code updated successfully",
+        id: result.insertId, // ✅ Return the new promo code's ID
+      });
     });
 });
 
