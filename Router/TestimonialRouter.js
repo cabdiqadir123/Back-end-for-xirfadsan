@@ -21,6 +21,17 @@ TestimonialRouter.get('/all', (req, res) => {
         });
 });
 
+TestimonialRouter.get('/allNew', (req, res) => {
+    mysqlconnection.query('select testimonial_id,name,person_role,title,description,is_active,created_at from testimonials',
+        (error, rows, fields) => {
+            if (!error) {
+                res.json(rows);
+            } else {
+                console.log(error);
+            }
+        });
+});
+
 TestimonialRouter.get("/image/:id", (req, res) => {
     const imageId = req.params.id;
     const query = "SELECT image FROM testimonials WHERE testimonial_id = ?";
@@ -40,63 +51,63 @@ TestimonialRouter.get("/image/:id", (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 TestimonialRouter.post("/add", upload.single("image"), (req, res) => {
-  const { name, description } = req.body;
-  const imageBuffer = req.file ? req.file.buffer : null;
+    const { name, description } = req.body;
+    const imageBuffer = req.file ? req.file.buffer : null;
 
-  const query = "INSERT INTO testimonials (name, description, image) VALUES (?, ?, ?)";
+    const query = "INSERT INTO testimonials (name, description, image) VALUES (?, ?, ?)";
 
-  mysqlconnection.query(query, [name, description, imageBuffer], (err, result) => {
-    if (err) {
-      console.error("❌ Error saving testimonial:", err);
-      return res.status(500).json({
-        status: "error",
-        message: "Error saving testimonial to database",
-        error: err.message,
-        body: req.body,
-      });
-    }
+    mysqlconnection.query(query, [name, description, imageBuffer], (err, result) => {
+        if (err) {
+            console.error("❌ Error saving testimonial:", err);
+            return res.status(500).json({
+                status: "error",
+                message: "Error saving testimonial to database",
+                error: err.message,
+                body: req.body,
+            });
+        }
 
-    // ✅ Successfully inserted
-    res.status(200).json({
-      status: "success",
-      message: "Testimonial added successfully",
-      id: result.insertId, // ✅ Return inserted ID
-      name,
-      description,
+        // ✅ Successfully inserted
+        res.status(200).json({
+            status: "success",
+            message: "Testimonial added successfully",
+            id: result.insertId, // ✅ Return inserted ID
+            name,
+            description,
+        });
     });
-  });
 });
 
 // for new typescript dashboard
 TestimonialRouter.post("/addNew", upload.single("image"), (req, res) => {
-  const { name,person_role,title, description ,is_active} = req.body;
-  const imageBuffer = req.file ? req.file.buffer : null;
+    const { name, person_role, title, description, is_active } = req.body;
+    const imageBuffer = req.file ? req.file.buffer : null;
 
-  const query = "INSERT INTO testimonials (name,person_role,title, description, image,is_active) VALUES (?,?,?, ?, ?,?)";
+    const query = "INSERT INTO testimonials (name,person_role,title, description, image,is_active) VALUES (?,?,?,?,?,?)";
 
-  mysqlconnection.query(query, [name,person_role, title,description, imageBuffer,is_active], (err, result) => {
-    if (err) {
-      console.error("❌ Error saving testimonial:", err);
-      return res.status(500).json({
-        status: "error",
-        message: "Error saving testimonial to database",
-        error: err.message,
-        body: req.body,
-      });
-    }
+    mysqlconnection.query(query, [name, person_role, title, description, imageBuffer, is_active], (err, result) => {
+        if (err) {
+            console.error("❌ Error saving testimonial:", err);
+            return res.status(500).json({
+                status: "error",
+                message: "Error saving testimonial to database",
+                error: err.message,
+                body: req.body,
+            });
+        }
 
-    // ✅ Successfully inserted
-    res.status(200).json({
-      status: "success",
-      message: "Testimonial added successfully",
-      id: result.insertId, // ✅ Return inserted ID
-      name,
-      person_role,
-      title,
-      description,
-      is_active
+        // ✅ Successfully inserted
+        res.status(200).json({
+            status: "success",
+            message: "Testimonial added successfully",
+            id: result.insertId, // ✅ Return inserted ID
+            name,
+            person_role,
+            title,
+            description,
+            is_active
+        });
     });
-  });
 });
 
 
