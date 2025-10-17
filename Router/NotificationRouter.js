@@ -20,50 +20,17 @@ NotificationRouter.get('/all', (req, res) => {
 });
 
 NotificationRouter.post('/add', (req, res) => {
-  const {
-    from_type,
-    from_id,
-    recipient_role,
-    user_id,
-    title,
-    message,
-    hasButton,
-    hasBook_id,
-    hasBook_started,
-    created_at
-  } = req.body;
-
-  console.log("📩 Received notification data:", req.body);
-
-  const query = `
-    INSERT INTO notifications 
-    (from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  const values = [
-    from_type,from_id,recipient_role,user_id,
-    title,message,hasButton,hasBook_id,hasBook_started,created_at
-  ];
-
-  mysqlconnection.query(query, values, (err, result) => {
-    if (err) {
-      console.error("❌ Error inserting notification:", err);
-      return res.status(500).json({
-        status: "error",
-        message: "Error saving notification to database",
-        error: err.message,
-        body: req.body
-      });
-    }
-
-    // ✅ Successfully inserted
-    res.status(200).json({
-      status: "success",
-      message: "Notification inserted successfully",
-      id: result.insertId, // ✅ Return inserted ID
+  const { from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at } = req.body;
+  console.log(req.body);
+  mysqlconnection.query(
+    'insert into notifications(from_type,from_id,recipient_role,user_id,title,message,hasButton,hasBook_id,hasBook_started,created_at) values(?,?,?,?,?,?,?,?,?,?);',
+    [from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'inserted' });
+      } else {
+        console.log(error);
+      }
     });
-  });
 });
 
 NotificationRouter.put('/update', (req, res) => {
