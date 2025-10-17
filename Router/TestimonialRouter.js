@@ -80,12 +80,12 @@ TestimonialRouter.post("/add", upload.single("image"), (req, res) => {
 
 // for new typescript dashboard
 TestimonialRouter.post("/addNew", upload.single("image"), (req, res) => {
-    const { name, person_role, title, description, is_active } = req.body;
+    const { name, person_role, title, description, is_active ,created_at} = req.body;
     const imageBuffer = req.file ? req.file.buffer : null;
 
-    const query = "INSERT INTO testimonials (name,person_role,title, description, image,is_active) VALUES (?,?,?,?,?,?)";
+    const query = "INSERT INTO testimonials (name,person_role,title, description, image,is_active,created_at) VALUES (?,?,?,?,?,?,?)";
 
-    mysqlconnection.query(query, [name, person_role, title, description, imageBuffer, is_active], (err, result) => {
+    mysqlconnection.query(query, [name, person_role, title, description, imageBuffer, is_active,created_at], (err, result) => {
         if (err) {
             console.error("❌ Error saving testimonial:", err);
             return res.status(500).json({
