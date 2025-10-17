@@ -205,15 +205,47 @@ TestimonialRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
 
 TestimonialRouter.post('/delete', (req, res) => {
     const { testimonial_id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('delete from testimonials where testimonial_id=?'
-        , [testimonial_id], (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                res.json({ status: error });
-            }
+
+    console.log("Delete request body:", req.body);
+
+    if (!testimonial_id) {
+        return res.status(400).json({
+            status: "error",
+            message: "testimonial_id is required",
+            reqBody: req.body,
         });
+    }
+
+    mysqlconnection.query(
+        'DELETE FROM testimonials WHERE testimonial_id = ?',
+        [testimonial_id],
+        (error, result) => {
+            if (error) {
+                console.error("❌ MySQL delete error:", error);
+                return res.status(500).json({
+                    status: "error",
+                    message: "Failed to delete testimonial",
+                    error: error.message,
+                    reqBody: req.body,
+                });
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    status: "not_found",
+                    message: "Testimonial not found",
+                    testimonial_id,
+                });
+            }
+
+            res.status(200).json({
+                status: "success",
+                message: "Testimonial deleted successfully",
+                testimonial_id,
+            });
+        }
+    );
 });
+
 
 module.exports = TestimonialRouter;
