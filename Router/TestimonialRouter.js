@@ -91,7 +91,10 @@ TestimonialRouter.post("/addNew", upload.single("image"), (req, res) => {
       message: "Testimonial added successfully",
       id: result.insertId, // ✅ Return inserted ID
       name,
+      person_role,
+      title,
       description,
+      is_active
     });
   });
 });
