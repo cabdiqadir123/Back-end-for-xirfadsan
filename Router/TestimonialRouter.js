@@ -40,16 +40,33 @@ TestimonialRouter.get("/image/:id", (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 TestimonialRouter.post("/add", upload.single("image"), (req, res) => {
-    const { name, description } = req.body;
-    const imageBuffer = req.file.buffer;
-    const query = "insert into testimonials(name, description,image) values(?,?,?);";
-    mysqlconnection.query(query, [name, description, imageBuffer], (err, result) => {
-        if (err) {
-            return res.status(500).send("Error saving image to database");
-        }
-        res.status(200).send("Image uploaded successfully");
+  const { name, description } = req.body;
+  const imageBuffer = req.file ? req.file.buffer : null;
+
+  const query = "INSERT INTO testimonials (name, description, image) VALUES (?, ?, ?)";
+
+  mysqlconnection.query(query, [name, description, imageBuffer], (err, result) => {
+    if (err) {
+      console.error("❌ Error saving testimonial:", err);
+      return res.status(500).json({
+        status: "error",
+        message: "Error saving testimonial to database",
+        error: err.message,
+        body: req.body,
+      });
+    }
+
+    // ✅ Successfully inserted
+    res.status(200).json({
+      status: "success",
+      message: "Testimonial added successfully",
+      id: result.insertId, // ✅ Return inserted ID
+      name,
+      description,
     });
+  });
 });
+
 
 TestimonialRouter.put("/update/:id", upload.single("image"), (req, res) => {
     const id = req.params.id;
