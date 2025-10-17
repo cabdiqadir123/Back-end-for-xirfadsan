@@ -67,6 +67,35 @@ TestimonialRouter.post("/add", upload.single("image"), (req, res) => {
   });
 });
 
+// for new typescript dashboard
+TestimonialRouter.post("/addNew", upload.single("image"), (req, res) => {
+  const { name,person_role,title, description ,is_active} = req.body;
+  const imageBuffer = req.file ? req.file.buffer : null;
+
+  const query = "INSERT INTO testimonials (name,person_role,title, description, image,is_active) VALUES (?,?,?, ?, ?,?)";
+
+  mysqlconnection.query(query, [name,person_role, title,description, imageBuffer,is_active], (err, result) => {
+    if (err) {
+      console.error("❌ Error saving testimonial:", err);
+      return res.status(500).json({
+        status: "error",
+        message: "Error saving testimonial to database",
+        error: err.message,
+        body: req.body,
+      });
+    }
+
+    // ✅ Successfully inserted
+    res.status(200).json({
+      status: "success",
+      message: "Testimonial added successfully",
+      id: result.insertId, // ✅ Return inserted ID
+      name,
+      description,
+    });
+  });
+});
+
 
 TestimonialRouter.put("/update/:id", upload.single("image"), (req, res) => {
     const id = req.params.id;
