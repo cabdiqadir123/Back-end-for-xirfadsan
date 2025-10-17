@@ -80,12 +80,12 @@ TestimonialRouter.post("/add", upload.single("image"), (req, res) => {
 
 // for new typescript dashboard
 TestimonialRouter.post("/addNew", upload.single("image"), (req, res) => {
-    const { name, person_role, title, description, is_active ,created_at} = req.body;
+    const { name, person_role, title, description, is_active, created_at } = req.body;
     const imageBuffer = req.file ? req.file.buffer : null;
 
     const query = "INSERT INTO testimonials (name,person_role,title, description, image,is_active,created_at) VALUES (?,?,?,?,?,?,?)";
 
-    mysqlconnection.query(query, [name, person_role, title, description, imageBuffer, is_active,created_at], (err, result) => {
+    mysqlconnection.query(query, [name, person_role, title, description, imageBuffer, is_active, created_at], (err, result) => {
         if (err) {
             console.error("❌ Error saving testimonial:", err);
             return res.status(500).json({
@@ -144,6 +144,59 @@ TestimonialRouter.put("/update/:id", upload.single("image"), (req, res) => {
         }
 
         res.status(200).send("testimonial updated successfully");
+    });
+});
+
+// for new typescript dashboard
+TestimonialRouter.put("/update/:id", upload.single("image"), (req, res) => {
+    const id = req.params.id;
+    const { name, person_role, title, description, is_active } = req.body;
+
+    const imageBuffer = req.file?.buffer;
+
+    // Build SQL dynamically
+    let query = `
+    UPDATE testimonials 
+    SET name = ?, person_role = ?, title = ?, description = ?, is_active = ?
+  `;
+    const values = [name, person_role, title, description, is_active];
+
+    // Only update image if a new one is uploaded
+    if (imageBuffer) {
+        query += `, image = ?`;
+        values.push(imageBuffer);
+    }
+
+    // Finish query
+    query += ` WHERE testimonial_id = ?`;
+    values.push(id);
+
+    mysqlconnection.query(query, values, (err, result) => {
+        if (err) {
+            console.error("❌ MySQL Error:", err);
+            return res.status(500).json({
+                status: "error",
+                message: "Error updating the testimonial",
+                error: err.message,
+                reqBody: req.body,
+            });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                status: "not_found",
+                message: "Testimonial not found",
+                reqBody: req.body,
+            });
+        }
+
+        // ✅ Return success with id and body
+        res.status(200).json({
+            status: "success",
+            message: "Testimonial updated successfully",
+            testimonial_id: id,
+            reqBody: req.body,
+        });
     });
 });
 
