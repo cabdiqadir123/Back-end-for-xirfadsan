@@ -150,15 +150,18 @@ TestimonialRouter.put("/update/:id", upload.single("image"), (req, res) => {
 // for new typescript dashboard
 TestimonialRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
     const id = req.params.id;
-    const { name, person_role, title, description, is_active } = req.body;
+    let { name, person_role, title, description, is_active } = req.body;
+
+    // ✅ Convert boolean/string to 1 or 0
+    is_active = (is_active === true || is_active === 'true' || is_active === 1 || is_active === '1') ? 1 : 0;
 
     const imageBuffer = req.file?.buffer;
 
     // Build SQL dynamically
     let query = `
-    UPDATE testimonials 
-    SET name = ?, person_role = ?, title = ?, description = ?, is_active = ?
-  `;
+        UPDATE testimonials 
+        SET name = ?, person_role = ?, title = ?, description = ?, is_active = ?
+    `;
     const values = [name, person_role, title, description, is_active];
 
     // Only update image if a new one is uploaded
