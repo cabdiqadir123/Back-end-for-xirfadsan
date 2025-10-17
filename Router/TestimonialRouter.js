@@ -148,7 +148,7 @@ TestimonialRouter.put("/update/:id", upload.single("image"), (req, res) => {
 });
 
 // for new typescript dashboard
-TestimonialRouter.put("/update/:id", upload.single("image"), (req, res) => {
+TestimonialRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
     const id = req.params.id;
     const { name, person_role, title, description, is_active } = req.body;
 
