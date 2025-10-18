@@ -79,7 +79,7 @@ BlogRouter.post("/add_New", upload.single("image"), (req, res) => {
   }
 
   const query = "INSERT INTO blog (title, short_description, blog, image, is_published,created_at) VALUES (?,?,?,?,?,?)";
-  const values = [title, short_description, blog, imageBuffer || null, is_published ?? 0,created_aty];
+  const values = [title, short_description, blog, imageBuffer || null, is_published ?? 0,created_at];
 
   mysqlconnection.query(query, values, (err, result) => {
     if (err) {
