@@ -20,6 +20,37 @@ SubServiceRouter.get('/all', (req, res) => {
   });
 });
 
+SubServiceRouter.get('/allNew', (req, res) => {
+  const query = `
+    SELECT 
+    ss.sub_service_id,
+    ss.sub_service,
+    ss.price,
+    ss.description,
+    ss.service_id,
+    IFNULL(COUNT(bs.id), 0) AS total_booked
+    FROM sub_services ss
+    LEFT JOIN booking_sub_services bs ON ss.sub_service_id = bs.sub_service_id
+    GROUP BY 
+        ss.sub_service_id,
+        ss.sub_service,
+        ss.price,
+        ss.description,
+        ss.service_id
+    ORDER BY sub_service_id ASC;
+  `;
+
+  mysqlconnection.query(query, (error, rows, fields) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+      res.status(500).json({ error: 'Database query failed' });
+    }
+  });
+});
+
+
 SubServiceRouter.get('/all_app/:id', (req, res) => {
   const id = req.params.id;
   mysqlconnection.query('SELECT sub_services.sub_service_id, sub_service, price, description,sub_services.service_id,services.name, COALESCE(favourite.id, 0) AS favourite_id, COALESCE(favourite.user_id, 0) AS favourite_user_id FROM sub_services inner join services on services.service_id  =sub_services.service_id LEFT JOIN favourite ON sub_services.sub_service_id = favourite.sub_service_id AND favourite.user_id = ?', [id], (error, rows, fields) => {
