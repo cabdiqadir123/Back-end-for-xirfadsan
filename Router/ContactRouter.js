@@ -55,12 +55,7 @@ ContactsRouter.put('/update_is_read/:id', (req, res) => {
     is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
 
     // Using SQL's COALESCE + NULLIF to keep old values when no new data is provided
-    const query = `
-    UPDATE contact_messages
-    SET 
-      is_read = COALESCE(NULLIF(?, ''), is_read),
-    WHERE id = ?;
-  `;
+    const query = `UPDATE contact_messages SET is_read =? WHERE id = ?;`;
 
     const values = [is_read, id];
 
@@ -90,13 +85,7 @@ ContactsRouter.put('/update_replied_at/:id', (req, res) => {
     is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
 
     // Using SQL's COALESCE + NULLIF to keep old values when no new data is provided
-    const query = `
-    UPDATE contact_messages
-    SET 
-      is_read = COALESCE(NULLIF(?, ''), is_read),
-      replied_at = COALESCE(NULLIF(?, ''), replied_at),
-    WHERE id = ?;
-  `;
+    const query = `UPDATE contact_messages SET is_read= ?,replied_at = ? WHERE id = ?;`;
 
     const values = [is_read, replied_at, id];
 
