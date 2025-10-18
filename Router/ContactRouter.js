@@ -20,7 +20,7 @@ ContactsRouter.get('/all', (req, res) => {
 });
 
 ContactsRouter.post('/add', (req, res) => {
-    const { name, email, phone, subject, message, status, created_at } = req.body;
+    const { name, email, phone, subject, message, is_read,replied_at, created_at } = req.body;
 
     if (!name || !email || !message) {
         return res.status(400).json({ error: "Missing required fields (name, email, message)" });
@@ -28,10 +28,10 @@ ContactsRouter.post('/add', (req, res) => {
 
     const query = `
     INSERT INTO contact_messages 
-    (name, email, phone, subject, message, status, created_at) 
-    VALUES (?, ?, ?, ?, ?, ?, ?);
+    (name, email, phone, subject, message, is_read,replied_at, created_at) 
+    VALUES (?, ?, ?, ?, ?, ?, ?,?);
   `;
-    const values = [name, email, phone, subject, message, status, created_at];
+    const values = [name, email, phone, subject, message, is_read,replied_at, created_at];
 
     mysqlconnection.query(query, values, (error, result) => {
         if (error) {
@@ -50,7 +50,9 @@ ContactsRouter.post('/add', (req, res) => {
 
 ContactsRouter.put('/update/:id', (req, res) => {
     const id = req.params.id;
-    const { name, email, phone, subject, message, status } = req.body;
+    const { name, email, phone, subject, message, is_read,replied_at } = req.body;
+
+    is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
 
     // Using SQL's COALESCE + NULLIF to keep old values when no new data is provided
     const query = `
@@ -61,11 +63,12 @@ ContactsRouter.put('/update/:id', (req, res) => {
       phone = COALESCE(NULLIF(?, ''), phone),
       subject = COALESCE(NULLIF(?, ''), subject),
       message = COALESCE(NULLIF(?, ''), message),
-      status = COALESCE(NULLIF(?, ''), status)
+      is_read = COALESCE(NULLIF(?, ''), is_read),
+      replied_at = COALESCE(NULLIF(?, ''), replied_at),
     WHERE id = ?;
   `;
 
-    const values = [name, email, phone, subject, message, status, id];
+    const values = [name, email, phone, subject, message, is_read,replied_at, id];
 
     mysqlconnection.query(query, values, (error, result) => {
         if (error) {
