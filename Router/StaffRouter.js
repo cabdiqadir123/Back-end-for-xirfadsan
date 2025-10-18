@@ -20,15 +20,57 @@ StaffRouter.get('/all', (req, res) => {
 });
 
 StaffRouter.get('/all_admin', (req, res) => {
-    mysqlconnection.query('SELECT staff.staff_id, staff.user_id AS staff_user_id, staff.service_id,services.name as servicename, u_staff.name AS staff_name,u_staff.email AS staff_email,u_staff.password,u_staff.phone AS staff_phone, u_staff.address AS staff_address, u_staff.sex, u_staff.role, u_staff.status, u_staff.image, staff.available,staff.created_at FROM staff INNER JOIN users u_staff ON staff.user_id = u_staff.id INNER join services  on staff.service_id=services.service_id',
-        (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                console.log(error);
-            }
-        });
+    const query = `
+    SELECT 
+        s.staff_id,
+        s.user_id AS staff_user_id,
+        s.service_id,
+        srv.name AS servicename,
+        u.name AS staff_name,
+        u.email AS staff_email,
+        u.password,
+        u.phone AS staff_phone,
+        u.address AS staff_address,
+        u.sex,
+        u.role,
+        u.status,
+        u.image,
+        s.available,
+        s.created_at,
+        IFNULL(SUM(b.amount), 0) AS total_earning
+    FROM staff s
+    INNER JOIN users u ON s.user_id = u.id
+    INNER JOIN services srv ON s.service_id = srv.service_id
+    LEFT JOIN bookings b ON s.staff_id = b.staff_id AND b.booking_status = 'Completed'
+    GROUP BY 
+        s.staff_id,
+        s.user_id,
+        s.service_id,
+        srv.name,
+        u.name,
+        u.email,
+        u.password,
+        u.phone,
+        u.address,
+        u.sex,
+        u.role,
+        u.status,
+        u.image,
+        s.available,
+        s.created_at
+    ORDER BY s.staff_id ASC
+  `;
+
+    mysqlconnection.query(query, (error, rows, fields) => {
+        if (!error) {
+            res.json(rows);
+        } else {
+            console.log(error);
+            res.status(500).json({ error: 'Database query failed' });
+        }
+    });
 });
+
 
 StaffRouter.get("/image/:id", (req, res) => {
     const imageId = req.params.id;

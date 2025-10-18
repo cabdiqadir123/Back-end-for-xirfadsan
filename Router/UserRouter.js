@@ -51,7 +51,7 @@ UserRouter.get('/allNew', (req, res) => {
       u.status,
       u.token,
       u.created_at
-    ORDER BY total_bookings DESC
+    ORDER BY u.id ASC;
   `;
 
   mysqlconnection.query(query, (error, rows, fields) => {
