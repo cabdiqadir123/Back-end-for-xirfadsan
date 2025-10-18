@@ -58,10 +58,10 @@ MembersRouter.post("/add", upload.single("image"), (req, res) => {
 
     mysqlconnection.query(query, [name, role,linkedin_profile,is_active, imageBuffer], (err, result) => {
         if (err) {
-            console.error("❌ Error saving testimonial:", err);
+            console.error("❌ Error saving team members:", err);
             return res.status(500).json({
                 status: "error",
-                message: "Error saving testimonial to database",
+                message: "Error saving team members to database",
                 error: err.message,
                 body: req.body,
             });
@@ -70,7 +70,7 @@ MembersRouter.post("/add", upload.single("image"), (req, res) => {
         // ✅ Successfully inserted
         res.status(200).json({
             status: "success",
-            message: "Testimonial added successfully",
+            message: "team members added successfully",
             id: result.insertId, // ✅ Return inserted ID
             name,
             description,
@@ -83,14 +83,14 @@ MembersRouter.post("/addNew", upload.single("image"), (req, res) => {
     const { name, role, linkedin_profile, is_active, created_at } = req.body;
     const imageBuffer = req.file ? req.file.buffer : null;
 
-    const query = "INSERT INTO testimonials (name,role,linkedin_profile,is_active,image,created_at) VALUES (?,?,?,?,?,?)";
+    const query = "INSERT INTO members (name,role,linkedin_profile,is_active,image,created_at) VALUES (?,?,?,?,?,?)";
 
     mysqlconnection.query(query, [name, role, linkedin_profile, is_active, imageBuffer, created_at], (err, result) => {
         if (err) {
             console.error("❌ Error saving testimonial:", err);
             return res.status(500).json({
                 status: "error",
-                message: "Error saving testimonial to database",
+                message: "Error saving team members to database",
                 error: err.message,
                 body: req.body,
             });
@@ -99,7 +99,7 @@ MembersRouter.post("/addNew", upload.single("image"), (req, res) => {
         // ✅ Successfully inserted
         res.status(200).json({
             status: "success",
-            message: "member added successfully",
+            message: "team members added successfully",
             id: result.insertId, // ✅ Return inserted ID
             name,
             role,
@@ -113,16 +113,16 @@ MembersRouter.post("/addNew", upload.single("image"), (req, res) => {
 
 MembersRouter.put("/update/:id", upload.single("image"), (req, res) => {
     const id = req.params.id;
-    const { name, description } = req.body;
+    const { name, role } = req.body;
 
     const imageBuffer = req.file?.buffer;
 
     // Build dynamic SQL
     let query = `
-    UPDATE testimonials 
-    SET name = ?, description = ?
+    UPDATE members 
+    SET name = ?, role = ?
   `;
-    const values = [name, description];
+    const values = [name, role];
 
     // Only update image if a new one is uploaded
     if (imageBuffer) {
@@ -179,7 +179,7 @@ MembersRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
             console.error("❌ MySQL Error:", err);
             return res.status(500).json({
                 status: "error",
-                message: "Error updating the testimonial",
+                message: "Error updating the team members",
                 error: err.message,
                 reqBody: req.body,
             });
@@ -188,7 +188,7 @@ MembersRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({
                 status: "not_found",
-                message: "Testimonial not found",
+                message: "team members not found",
                 reqBody: req.body,
             });
         }
@@ -196,7 +196,7 @@ MembersRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
         // ✅ Return success with id and body
         res.status(200).json({
             status: "success",
-            message: "Testimonial updated successfully",
+            message: "team members updated successfully",
             testimonial_id: id,
             reqBody: req.body,
         });
@@ -224,7 +224,7 @@ MembersRouter.post('/delete', (req, res) => {
                 console.error("❌ MySQL delete error:", error);
                 return res.status(500).json({
                     status: "error",
-                    message: "Failed to delete testimonial",
+                    message: "Failed to delete team members",
                     error: error.message,
                     reqBody: req.body,
                 });
@@ -240,7 +240,7 @@ MembersRouter.post('/delete', (req, res) => {
 
             res.status(200).json({
                 status: "success",
-                message: "Testimonial deleted successfully",
+                message: "team members deleted successfully",
                 testimonial_id,
             });
         }
