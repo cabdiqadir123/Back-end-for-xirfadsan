@@ -20,7 +20,7 @@ AccountDelRouter.get('/all', (req, res) => {
 });
 
 AccountDelRouter.post('/add', (req, res) => {
-    const { name, email, phone, subject, message, is_read, replied_at, created_at } = req.body;
+    const { user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at } = req.body;
 
     if (!name || !email || !message) {
         return res.status(400).json({ error: "Missing required fields (name, email, message)" });
@@ -28,14 +28,14 @@ AccountDelRouter.post('/add', (req, res) => {
 
     const query = `
     INSERT INTO account_delete 
-    (name, email, phone, subject, message, is_read,replied_at, created_at) 
+    (user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at ) 
     VALUES (?, ?, ?, ?, ?, ?, ?,?);
   `;
-    const values = [name, email, phone, subject, message, is_read, replied_at, created_at];
+    const values = [user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at ];
 
     mysqlconnection.query(query, values, (error, result) => {
         if (error) {
-            console.error("Error inserting contact message:", error);
+            console.error("Error inserting account delete:", error);
             return res.status(500).json({ error: "Failed to insert contact message", details: error });
         }
 
@@ -48,23 +48,22 @@ AccountDelRouter.post('/add', (req, res) => {
 });
 
 
-AccountDelRouter.put('/update_is_read/:id', (req, res) => {
+AccountDelRouter.put('/update/:id', (req, res) => {
     const id = req.params.id;
-    let { is_read } = req.body;
+    let { status } = req.body;
 
-    is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
 
     // Using SQL's COALESCE + NULLIF to keep old values when no new data is provided
-    const query = `UPDATE contact_messages SET is_read =? WHERE id = ?;`;
+    const query = `UPDATE account_delete SET status =? WHERE id = ?;`;
 
-    const values = [is_read, id];
+    const values = [status, id];
 
     mysqlconnection.query(query, values, (error, result) => {
         if (error) {
-            console.error("Error updating contact message:", error);
+            console.error("Error updating account delete message:", error);
             return res.status(500).json({
                 status: "error",
-                message: "Error updating the is read",
+                message: "Error updating status",
                 error: err.message,
                 reqBody: req.body,
             });
@@ -74,44 +73,14 @@ AccountDelRouter.put('/update_is_read/:id', (req, res) => {
             return res.status(404).json({ error: "Contact message not found" });
         }
 
-        res.status(200).json({ message: "Contact message updated successfully", id });
-    });
-});
-
-AccountDelRouter.put('/update_replied_at/:id', (req, res) => {
-    const id = req.params.id;
-    let { is_read, replied_at } = req.body;
-
-    is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
-
-    // Using SQL's COALESCE + NULLIF to keep old values when no new data is provided
-    const query = `UPDATE contact_messages SET is_read= ?,replied_at = ? WHERE id = ?;`;
-
-    const values = [is_read, replied_at, id];
-
-    mysqlconnection.query(query, values, (error, result) => {
-        if (error) {
-            console.error("Error updating contact message:", error);
-            return res.status(500).json({
-                status: "error",
-                message: "Error updating the is repliaed",
-                error: err.message,
-                reqBody: req.body,
-            });
-        }
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: "Contact message not found" });
-        }
-
-        res.status(200).json({ message: "Contact message updated successfully", id });
+        res.status(200).json({ message: "status updated successfully", id });
     });
 });
 
 AccountDelRouter.post('/delete', (req, res) => {
     const { id } = req.body;
     console.log(req.body);
-    mysqlconnection.query('delete from contact_messages where id=?'
+    mysqlconnection.query('delete from account_delete where id=?'
         , [id], (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
