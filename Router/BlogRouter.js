@@ -66,7 +66,7 @@ BlogRouter.post("/add", upload.single("image"), (req, res) => {
 });
 
 //for new typescript dashboard
-BlogRouter.post("/addNew", upload.single("image"), (req, res) => {
+BlogRouter.post("/add_New", upload.single("image"), (req, res) => {
   const { title, short_description, blog, is_published,created_at } = req.body;
   const imageBuffer = req.file?.buffer;
 
