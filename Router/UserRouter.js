@@ -82,7 +82,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 UserRouter.post('/add', upload.single("image"), (req, res) => {
   try {
-    const { name, email, password, phone, address,sex, role, status,created_at ,token} = req.body;
+    const { name, email, password, phone, address, sex, role, status, created_at, token } = req.body;
     const imageBuffer = req.file.buffer;
     // Check if the user already exists
     mysqlconnection.query('SELECT id,name,email,password,phone,address,sex,role,status,token FROM users WHERE email = ? OR phone = ?', [email, phone], (error, rows) => {
@@ -94,7 +94,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
       }
       // Insert new user into MySQL database
       const query = 'insert into users(name,email,password,phone,address,sex,role,status,image,created_at,token) values(?,?,?,?,?,?,?,?,?,?,?);';
-      mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer,created_at,token], (error, result) => {
+      mysqlconnection.query(query, [name, email, password, phone, address, sex, role, status, imageBuffer, created_at, token], (error, result) => {
         if (error) {
           return res.status(500).json({ error: error.message });
         }
@@ -139,14 +139,23 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
   const { name, email, password, phone, address, sex, role, status } = req.body;
   const imageBuffer = req.file?.buffer;
 
-  // Build dynamic SQL query
+  // ✅ SQL keeps old values when input is null or empty string
   let query = `
-    UPDATE users 
-    SET name = ?, email = ?, password = ?, phone = ?, address = ?, sex = ?, role = ?, status = ?
+    UPDATE users
+    SET 
+      name = COALESCE(NULLIF(?, ''), name),
+      email = COALESCE(NULLIF(?, ''), email),
+      password = COALESCE(NULLIF(?, ''), password),
+      phone = COALESCE(NULLIF(?, ''), phone),
+      address = COALESCE(NULLIF(?, ''), address),
+      sex = COALESCE(NULLIF(?, ''), sex),
+      role = COALESCE(NULLIF(?, ''), role),
+      status = COALESCE(NULLIF(?, ''), status)
   `;
+
   const values = [name, email, password, phone, address, sex, role, status];
 
-  // Only update image if a new one is uploaded
+  // ✅ Only update image if provided
   if (imageBuffer) {
     query += `, image = ?`;
     values.push(imageBuffer);
@@ -168,18 +177,11 @@ UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // ✅ Return full JSON response
+    // ✅ Return success
     res.status(200).json({
+      message: "User updated successfully",
       id,
-      name,
-      email,
-      password,
-      phone,
-      address,
-      sex,
-      role,
-      status: "user updated successfully",
-      body: req.body
+      updatedFields: req.body,
     });
   });
 });
@@ -248,7 +250,7 @@ UserRouter.put('/updatetoken/:id', (req, res) => {
   mysqlconnection.query('update users set token=? where phone=?'
     , [token, id], (error, rows, fields) => {
       if (!error) {
-        res.json({ status:token });
+        res.json({ status: token });
       } else {
         console.log(error);
       }
@@ -256,16 +258,16 @@ UserRouter.put('/updatetoken/:id', (req, res) => {
 });
 
 UserRouter.post('/delete', (req, res) => {
-    const { id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('delete from users where id=?'
-        , [id], (error, rows, fields) => {
-            if (!error) {
-                res.json(rows);
-            } else {
-                res.json({ status: error });
-            }
-        });
+  const { id } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('delete from users where id=?'
+    , [id], (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        res.json({ status: error });
+      }
+    });
 });
 
 UserRouter.post('/login', (req, res) => {
