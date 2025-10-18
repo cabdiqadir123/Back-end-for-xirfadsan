@@ -35,7 +35,7 @@ PrivacyRouter.post('/add', (req, res) => {
 
 PrivacyRouter.put('/update/:id', (req, res) => {
     const id = req.params.id;
-    const { section_title, section_content, section_order, last_updated } = req.body;
+    const { section_title, section_content, last_updated } = req.body;
 
     // Automatically use current timestamp if last_updated is not provided
     const currentTime = new Date();
@@ -45,7 +45,6 @@ PrivacyRouter.put('/update/:id', (req, res) => {
     SET 
       section_title = COALESCE(NULLIF(?, ''), section_title),
       section_content = COALESCE(NULLIF(?, ''), section_content),
-      section_order = COALESCE(NULLIF(?, ''), section_order),
       last_updated = COALESCE(NULLIF(?, ''), ?)
     WHERE id = ?;
   `;
@@ -53,7 +52,6 @@ PrivacyRouter.put('/update/:id', (req, res) => {
     const values = [
         section_title,
         section_content,
-        section_order,
         last_updated,
         currentTime,
         id
