@@ -50,7 +50,7 @@ ContactsRouter.post('/add', (req, res) => {
 
 ContactsRouter.put('/update_is_read/:id', (req, res) => {
     const id = req.params.id;
-    const { is_read } = req.body;
+    let { is_read } = req.body;
 
     is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
 
@@ -80,7 +80,7 @@ ContactsRouter.put('/update_is_read/:id', (req, res) => {
 
 ContactsRouter.put('/update_replied_at/:id', (req, res) => {
     const id = req.params.id;
-    const { is_read, replied_at } = req.body;
+    let { is_read, replied_at } = req.body;
 
     is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
 
