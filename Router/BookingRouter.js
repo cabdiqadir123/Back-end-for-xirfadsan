@@ -95,14 +95,14 @@ BookingRouter.post('/add', (req, res) => {
     staff_id,
     Avialable_time,
     discription,
-    startdate,created_at
+    startdate, created_at
   } = req.body;
 
   console.log(req.body);
 
   mysqlconnection.query(
     'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,staff_id,Avialable_time,discription,startdate,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);',
-    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, staff_id, Avialable_time, discription, startdate,created_at],
+    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, staff_id, Avialable_time, discription, startdate, created_at],
     (error, results) => {
       if (!error) {
         // ✅ Return the inserted book_id in the response
@@ -149,23 +149,41 @@ BookingRouter.put('/update', (req, res) => {
 BookingRouter.put('/updatestatus/:id', (req, res) => {
   const id = req.params.id;
   const { booking_status } = req.body;
-  console.log(req.body);
-  mysqlconnection.query('update bookings set booking_status= ? where id=?'
-    , [booking_status, id], (error, rows, fields) => {
-      if (!error) {
-        res.json({ status: 'updated' });
-      } else {
-        console.log(error);
-      }
+
+  if (!booking_status) {
+    return res.status(400).json({ error: "booking_status is required" });
+  }
+
+  const query = `
+    UPDATE bookings
+    SET booking_status = ?
+    WHERE id = ?;
+  `;
+
+  mysqlconnection.query(query, [booking_status, id], (error, result) => {
+    if (error) {
+      console.error("Error updating booking status:", error);
+      return res.status(500).json({ error: "Failed to update booking status", details: error });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    res.status(200).json({
+      message: "Booking status updated successfully",
+      id: id,
+      new_status: booking_status
     });
+  });
 });
 
 BookingRouter.put('/updateamount/:id', (req, res) => {
   const id = req.params.id;
-  const { price_amount,amount } = req.body;
+  const { price_amount, amount } = req.body;
   console.log(req.body);
   mysqlconnection.query('update bookings set price_amount=?,amount=? where id=?'
-    , [price_amount,amount, id], (error, rows, fields) => {
+    , [price_amount, amount, id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
       } else {
@@ -183,7 +201,7 @@ BookingRouter.put('/updateamountNew/:id', (req, res) => {
 
   mysqlconnection.query(
     'UPDATE bookings SET  amount=?, reason=? WHERE id=?',
-    [ amount, reason, id], // pass 4 values in correct order
+    [amount, reason, id], // pass 4 values in correct order
     (error, results) => {
       if (!error) {
         res.json({ status: 'updated', id }); // return id as requested
