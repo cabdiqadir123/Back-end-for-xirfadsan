@@ -20,6 +20,7 @@ SubServiceRouter.get('/all', (req, res) => {
   });
 });
 
+// for new typescript dashboard
 SubServiceRouter.get('/allNew', (req, res) => {
   const query = `
     SELECT 
