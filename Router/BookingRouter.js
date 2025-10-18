@@ -177,13 +177,13 @@ BookingRouter.put('/updateamount/:id', (req, res) => {
 // 
 BookingRouter.put('/updateamountNew/:id', (req, res) => {
   const id = req.params.id;
-  const { amount, reason, price_amount } = req.body; // get price_amount too
+  const { amount, reason } = req.body; // get price_amount too
 
   console.log(req.body);
 
   mysqlconnection.query(
-    'UPDATE bookings SET price_amount=?, amount=?, reason=? WHERE id=?',
-    [price_amount, amount, reason, id], // pass 4 values in correct order
+    'UPDATE bookings SET  amount=?, reason=? WHERE id=?',
+    [ amount, reason, id], // pass 4 values in correct order
     (error, results) => {
       if (!error) {
         res.json({ status: 'updated', id }); // return id as requested
