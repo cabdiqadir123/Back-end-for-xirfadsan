@@ -38,7 +38,7 @@ UserRouter.get('/allNew', (req, res) => {
       u.created_at,
       COUNT(b.id) AS total_bookings
     FROM users u
-    LEFT JOIN bookings b ON u.id = b.user_id
+    LEFT JOIN bookings b ON u.id = b.customer_id
     GROUP BY 
       u.id,
       u.name,
