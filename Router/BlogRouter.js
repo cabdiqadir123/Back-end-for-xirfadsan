@@ -140,7 +140,7 @@ BlogRouter.put("/update/:id", upload.single("image"), (req, res) => {
 // for new typescript dashboard
 BlogRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
   const id = req.params.id;
-  const { title, short_description, blog, is_published } = req.body;
+  let { title, short_description, blog, is_published } = req.body;
 
   is_published = (is_published === true || is_published === 'true' || is_published === 1 || is_published === '1') ? 1 : 0;
 
