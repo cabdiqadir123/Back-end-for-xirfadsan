@@ -142,6 +142,8 @@ BlogRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
   const id = req.params.id;
   const { title, short_description, blog, is_published } = req.body;
 
+  is_published = (is_published === true || is_published === 'true' || is_published === 1 || is_published === '1') ? 1 : 0;
+
   const imageBuffer = req.file?.buffer;
 
   // Build dynamic SQL
