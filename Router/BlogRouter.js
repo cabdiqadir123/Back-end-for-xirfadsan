@@ -11,7 +11,7 @@ BlogRouter.get('/', (req, res) => {
 });
 
 BlogRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select id,title, blog,created_at from blog', (error, rows, fields) => {
+  mysqlconnection.query('select id,title,short_description, blog,is_published,created_at from blog', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -67,7 +67,7 @@ BlogRouter.post("/add", upload.single("image"), (req, res) => {
 
 //for new typescript dashboard
 BlogRouter.post("/add_New", upload.single("image"), (req, res) => {
-  const { title, short_description, blog, is_published,created_at } = req.body;
+  const { title, short_description, blog, is_published, created_at } = req.body;
   const imageBuffer = req.file?.buffer;
 
   if (!title || !short_description || !blog) {
@@ -79,7 +79,7 @@ BlogRouter.post("/add_New", upload.single("image"), (req, res) => {
   }
 
   const query = "INSERT INTO blog (title, short_description, blog, image, is_published,created_at) VALUES (?,?,?,?,?,?)";
-  const values = [title, short_description, blog, imageBuffer || null, is_published ?? 0,created_at];
+  const values = [title, short_description, blog, imageBuffer || null, is_published ?? 0, created_at];
 
   mysqlconnection.query(query, values, (err, result) => {
     if (err) {
@@ -134,6 +134,44 @@ BlogRouter.put("/update/:id", upload.single("image"), (req, res) => {
     }
 
     res.status(200).send("blog updated successfully");
+  });
+});
+
+// for new typescript dashboard
+BlogRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
+  const id = req.params.id;
+  const { title, short_description, blog, is_published } = req.body;
+
+  const imageBuffer = req.file?.buffer;
+
+  // Build dynamic SQL
+  let query = `
+    UPDATE blog 
+    SET title =?,short_description=?, blog =?, is_published=?
+  `;
+  const values = [title, short_description, blog, is_published];
+
+  // Only update image if a new one is uploaded
+  if (imageBuffer) {
+    query += `, image = ?`;
+    values.push(imageBuffer);
+  }
+
+  query += ` WHERE id = ?`;
+  values.push(id);
+
+  mysqlconnection.query(query, values, (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Error updating the blog", details: err });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    // Return updated blog ID
+    res.status(200).json({ id, message: "Blog updated successfully" });
   });
 });
 
