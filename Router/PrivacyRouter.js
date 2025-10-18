@@ -20,11 +20,11 @@ PrivacyRouter.get('/all', (req, res) => {
 });
 
 PrivacyRouter.post('/add', (req, res) => {
-    const { privacy_policy } = req.body;
+    const { section_title, section_content, section_order, last_updated, effective_date, created_at } = req.body;
     console.log(req.body);
     mysqlconnection.query(
-        'insert into privacy(privacy_policy) values(?);',
-        [privacy_policy], (error, rows, fields) => {
+        'insert into privacy(section_title,section_content,section_order,last_updated, effective_date,created_at) values(?,?,?,?,?,?);',
+        [section_title, section_content, section_order, last_updated, effective_date, created_at], (error, rows, fields) => {
             if (!error) {
                 res.json({ status: 'inserted' });
             } else {
@@ -33,16 +33,48 @@ PrivacyRouter.post('/add', (req, res) => {
         });
 });
 
-PrivacyRouter.put('/update', (req, res) => {
-    const { privacy_policy } = req.body;
-    mysqlconnection.query('update privacy set privacy_policy=?'
-        , [privacy_policy], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'updated' });
-            } else {
-                console.log(error);
-            }
+PrivacyRouter.put('/update/:id', (req, res) => {
+    const id = req.params.id;
+    const { section_title, section_content, section_order, last_updated } = req.body;
+
+    // Automatically use current timestamp if last_updated is not provided
+    const currentTime = new Date();
+
+    const query = `
+    UPDATE privacy
+    SET 
+      section_title = COALESCE(NULLIF(?, ''), section_title),
+      section_content = COALESCE(NULLIF(?, ''), section_content),
+      section_order = COALESCE(NULLIF(?, ''), section_order),
+      last_updated = COALESCE(NULLIF(?, ''), ?)
+    WHERE id = ?;
+  `;
+
+    const values = [
+        section_title,
+        section_content,
+        section_order,
+        last_updated,
+        currentTime,
+        id
+    ];
+
+    mysqlconnection.query(query, values, (error, result) => {
+        if (error) {
+            console.error("Error updating privacy section:", error);
+            return res.status(500).json({ error: "Failed to update privacy section", details: error });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Privacy section not found" });
+        }
+
+        res.status(200).json({
+            message: "Privacy section updated successfully",
+            id,
+            updated_at: last_updated || currentTime
         });
+    });
 });
 
 PrivacyRouter.post('/delete/:id', (req, res) => {
