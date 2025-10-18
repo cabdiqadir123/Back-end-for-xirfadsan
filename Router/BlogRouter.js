@@ -67,7 +67,7 @@ BlogRouter.post("/add", upload.single("image"), (req, res) => {
 
 //for new typescript dashboard
 BlogRouter.post("/addNew", upload.single("image"), (req, res) => {
-  const { title, short_description, blog, is_published } = req.body;
+  const { title, short_description, blog, is_published,created_at } = req.body;
   const imageBuffer = req.file?.buffer;
 
   if (!title || !short_description || !blog) {
@@ -78,8 +78,8 @@ BlogRouter.post("/addNew", upload.single("image"), (req, res) => {
     });
   }
 
-  const query = "INSERT INTO blog (title, short_description, blog, image, is_published) VALUES (?,?,?,?,?)";
-  const values = [title, short_description, blog, imageBuffer || null, is_published ?? 0];
+  const query = "INSERT INTO blog (title, short_description, blog, image, is_published,created_at) VALUES (?,?,?,?,?,?)";
+  const values = [title, short_description, blog, imageBuffer || null, is_published ?? 0,created_aty];
 
   mysqlconnection.query(query, values, (err, result) => {
     if (err) {
