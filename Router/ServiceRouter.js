@@ -20,6 +20,40 @@ ServiceRouter.get('/all', (req, res) => {
   });
 });
 
+// for new typescript dashboard
+ServiceRouter.get('/allNew', (req, res) => {
+  const query = `
+    SELECT 
+        s.service_id,
+        s.name,
+        s.image,
+        s.color,
+        s.status,
+        s.created_at,
+        IFNULL(SUM(b.amount), 0) AS total_revenue
+    FROM services s
+    LEFT JOIN bookings b ON s.service_id = b.service_id AND b.booking_status = 'Completed'
+    GROUP BY 
+        s.service_id,
+        s.name,
+        s.image,
+        s.color,
+        s.status,
+        s.created_at
+    ORDER BY s.service_id ASC
+  `;
+
+  mysqlconnection.query(query, (error, rows, fields) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+      res.status(500).json({ error: 'Database query failed' });
+    }
+  });
+});
+
+
 ServiceRouter.get("/getbyservice/all/:id", (req, res) => {
   const service_id = req.params.id;
   const query = "select service_id,name,color,created_at from services WHERE service_id = (select service_id from suppliers WHERE user_id=?)";
