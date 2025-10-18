@@ -29,16 +29,19 @@ SubServiceRouter.get('/allNew', (req, res) => {
     ss.price,
     ss.description,
     ss.service_id,
+    ss.service_id,
+    services.name,
     IFNULL(COUNT(bs.id), 0) AS total_booked
     FROM sub_services ss
     LEFT JOIN booking_sub_services bs ON ss.sub_service_id = bs.sub_service_id
+    inner join services on services.service_id = ss.service_id 
     GROUP BY 
         ss.sub_service_id,
         ss.sub_service,
         ss.price,
         ss.description,
         ss.service_id
-    ORDER BY sub_service_id ASC;
+    ORDER BY ss.sub_service_id ASC;
   `;
 
   mysqlconnection.query(query, (error, rows, fields) => {
