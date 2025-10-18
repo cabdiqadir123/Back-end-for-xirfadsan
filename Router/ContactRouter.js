@@ -48,9 +48,9 @@ ContactsRouter.post('/add', (req, res) => {
 });
 
 
-ContactsRouter.put('/update/:id', (req, res) => {
+ContactsRouter.put('/update_is_read/:id', (req, res) => {
     const id = req.params.id;
-    const { name, email, phone, subject, message, is_read,replied_at } = req.body;
+    const { is_read } = req.body;
 
     is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
 
@@ -58,17 +58,11 @@ ContactsRouter.put('/update/:id', (req, res) => {
     const query = `
     UPDATE contact_messages
     SET 
-      name = COALESCE(NULLIF(?, ''), name),
-      email = COALESCE(NULLIF(?, ''), email),
-      phone = COALESCE(NULLIF(?, ''), phone),
-      subject = COALESCE(NULLIF(?, ''), subject),
-      message = COALESCE(NULLIF(?, ''), message),
       is_read = COALESCE(NULLIF(?, ''), is_read),
-      replied_at = COALESCE(NULLIF(?, ''), replied_at),
     WHERE id = ?;
   `;
 
-    const values = [name, email, phone, subject, message, is_read,replied_at, id];
+    const values = [is_read, id];
 
     mysqlconnection.query(query, values, (error, result) => {
         if (error) {
@@ -84,6 +78,36 @@ ContactsRouter.put('/update/:id', (req, res) => {
     });
 });
 
+ContactsRouter.put('/update_replied_at/:id', (req, res) => {
+    const id = req.params.id;
+    const { is_read,replied_at } = req.body;
+
+    is_read = (is_read === true || is_read === 'true' || is_read === 1 || is_read === '1') ? 1 : 0;
+
+    // Using SQL's COALESCE + NULLIF to keep old values when no new data is provided
+    const query = `
+    UPDATE contact_messages
+    SET 
+      is_read = COALESCE(NULLIF(?, ''), is_read),
+      replied_at = COALESCE(NULLIF(?, ''), replied_at),
+    WHERE id = ?;
+  `;
+
+    const values = [is_read,replied_at, id];
+
+    mysqlconnection.query(query, values, (error, result) => {
+        if (error) {
+            console.error("Error updating contact message:", error);
+            return res.status(500).json({ error: "Failed to update contact message", details: error });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Contact message not found" });
+        }
+
+        res.status(200).json({ message: "Contact message updated successfully", id });
+    });
+});
 
 ContactsRouter.post('/delete', (req, res) => {
     const { id } = req.body;
