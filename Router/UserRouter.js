@@ -21,6 +21,49 @@ UserRouter.get('/all', (req, res) => {
   });
 });
 
+// for new dashoard
+UserRouter.get('/allNew', (req, res) => {
+  const query = `
+    SELECT 
+      u.id,
+      u.name,
+      u.email,
+      u.password,
+      u.phone,
+      u.address,
+      u.sex,
+      u.role,
+      u.status,
+      u.token,
+      u.created_at,
+      COUNT(b.id) AS total_bookings
+    FROM users u
+    LEFT JOIN booking b ON u.id = b.user_id
+    GROUP BY 
+      u.id,
+      u.name,
+      u.email,
+      u.password,
+      u.phone,
+      u.address,
+      u.sex,
+      u.role,
+      u.status,
+      u.token,
+      u.created_at
+    ORDER BY total_bookings DESC
+  `;
+
+  mysqlconnection.query(query, (error, rows, fields) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+      res.status(500).json({ error: 'Database query failed' });
+    }
+  });
+});
+
 
 UserRouter.get('/customer/all', (req, res) => {
   mysqlconnection.query('select id,name,email,password,phone,address,sex,role,status,token,created_at from users where role="customer"', (error, rows, fields) => {
