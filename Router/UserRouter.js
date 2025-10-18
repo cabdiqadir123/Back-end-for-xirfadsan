@@ -134,7 +134,7 @@ UserRouter.post('/add', upload.single("image"), (req, res) => {
 //   });
 // });
 
-UserRouter.put("/update/:id", upload.single("image"), (req, res) => {
+UserRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
   const id = req.params.id;
   const { name, email, password, phone, address, sex, role, status } = req.body;
   const imageBuffer = req.file?.buffer;
