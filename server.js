@@ -35,6 +35,7 @@ app.use('/api/blog/', require('./Router/BlogRouter'));
 app.use('/api/send-email/', require('./Router/NodemailerRouter'));
 app.use('/api/sms/', require('./Router/SmsRouter'));
 app.use('/api/evc-pay/', require('./Router/EvcRouter'));
+app.use('/api/member/', require('./Router/MemRouter'));
 
 // ------------------- HEARTBEAT -------------------
 const APP_URL = process.env.APP_URL; // Set this in Render environment variables
