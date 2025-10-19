@@ -59,7 +59,8 @@ ComplaintRouter.put('/update/:id', (req, res) => {
     res.status(200).json({
       message: 'Complaint updated successfully',
       id: id,
-      updated_fields: { issue, comment }
+      updated_fields: { issue, comment },
+      body: req.body
     });
   });
 });
