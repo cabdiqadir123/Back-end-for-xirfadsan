@@ -39,11 +39,14 @@ StaffRouter.get('/all_admin', (req, res) => {
     -- Total earnings from completed bookings
     IFNULL(SUM(CASE WHEN b.booking_status = 'Completed' THEN b.amount ELSE 0 END), 0) AS total_earning,
     -- Total number of all bookings (completed or not)
-    COUNT(b.id) AS total_job
+    COUNT(b.id) AS total_job,
+    -- Average rating considering num_rating
+    IFNULL(SUM(r.rating) / NULLIF(SUM(r.num_rating), 0), 0) AS average_rating
     FROM staff s
     INNER JOIN users u ON s.user_id = u.id
     INNER JOIN services srv ON s.service_id = srv.service_id
     LEFT JOIN bookings b ON s.staff_id = b.staff_id
+    LEFT JOIN review r ON r.staff_id = s.staff_id
     GROUP BY 
         s.staff_id,
         s.user_id,
