@@ -22,26 +22,29 @@ StaffRouter.get('/all', (req, res) => {
 StaffRouter.get('/all_admin', (req, res) => {
     const query = `
     SELECT 
-        s.staff_id,
-        s.user_id AS staff_user_id,
-        s.service_id,
-        srv.name AS servicename,
-        u.name AS staff_name,
-        u.email AS staff_email,
-        u.password,
-        u.phone AS staff_phone,
-        u.address AS staff_address,
-        u.sex,
-        u.role,
-        u.status,
-        u.image,
-        s.available,
-        s.created_at,
-        IFNULL(SUM(b.amount), 0) AS total_earning
+    s.staff_id,
+    s.user_id AS staff_user_id,
+    s.service_id,
+    srv.name AS servicename,
+    u.name AS staff_name,
+    u.email AS staff_email,
+    u.password,
+    u.phone AS staff_phone,
+    u.address AS staff_address,
+    u.sex,
+    u.role,
+    u.status,
+    u.image,
+    s.available,
+    s.created_at,
+    -- Total earnings from completed bookings
+    IFNULL(SUM(CASE WHEN b.booking_status = 'Completed' THEN b.amount ELSE 0 END), 0) AS total_earning,
+    -- Total number of all bookings (completed or not)
+    COUNT(b.id) AS total_job
     FROM staff s
     INNER JOIN users u ON s.user_id = u.id
     INNER JOIN services srv ON s.service_id = srv.service_id
-    LEFT JOIN bookings b ON s.staff_id = b.staff_id AND b.booking_status = 'Completed'
+    LEFT JOIN bookings b ON s.staff_id = b.staff_id
     GROUP BY 
         s.staff_id,
         s.user_id,
@@ -58,7 +61,7 @@ StaffRouter.get('/all_admin', (req, res) => {
         u.image,
         s.available,
         s.created_at
-    ORDER BY s.staff_id ASC
+    ORDER BY s.staff_id ASC;
   `;
 
     mysqlconnection.query(query, (error, rows, fields) => {
