@@ -34,7 +34,6 @@ StaffRouter.get('/all_admin', (req, res) => {
     u.sex,
     u.role,
     u.status,
-    u.image,
     s.available,
     s.created_at,
     -- Total earnings from completed bookings
@@ -58,7 +57,6 @@ StaffRouter.get('/all_admin', (req, res) => {
         u.sex,
         u.role,
         u.status,
-        u.image,
         s.available,
         s.created_at
     ORDER BY s.staff_id ASC;
