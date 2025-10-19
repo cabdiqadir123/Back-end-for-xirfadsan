@@ -11,7 +11,7 @@ ServiceRouter.get('/', (req, res) => {
 });
 
 ServiceRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select service_id,name,color,status,created_at  from services', (error, rows, fields) => {
+  mysqlconnection.query('select service_id,name,image,color,status,created_at  from services', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -35,6 +35,7 @@ ServiceRouter.get('/allNew', (req, res) => {
     GROUP BY 
         s.service_id,
         s.name,
+        s.image,
         s.color,
         s.status,
         s.created_at
