@@ -56,17 +56,36 @@ EarningRouter.post('/add', (req, res) => {
         });
 });
 
-EarningRouter.put('/update', (req, res) => {
-    const { name, image, secondry_image, created_at, service_id } = req.body;
-    console.log(req.body);
-    mysqlconnection.query('update sub_services set sub_service= ?, service_id= ?, image= ?, created_at=? where sub_service_id=?'
-        , [name, image, secondry_image, created_at, service_id], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'updated' });
-            } else {
-                console.log(error);
-            }
-        });
+EarningRouter.put('/update/:id', (req, res) => {
+  const id = req.params.id;
+  const { status } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ error: "status is required" });
+  }
+
+  const query = `
+    UPDATE earnings
+    SET status = ?
+    WHERE id = ?;
+  `;
+
+  mysqlconnection.query(query, [status, id], (error, result) => {
+    if (error) {
+      console.error("Error updating booking status:", error);
+      return res.status(500).json({ error: "Failed to update earning status", details: error });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "earning not found" });
+    }
+
+    res.status(200).json({
+      message: "earning status updated successfully",
+      id: id,
+      new_status: status
+    });
+  });
 });
 
 EarningRouter.post('/delete', (req, res) => {
