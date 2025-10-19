@@ -36,10 +36,6 @@ ComplaintRouter.put('/update/:id', (req, res) => {
   const id = req.params.id;
   const { issue, comment } = req.body;
 
-  if (!issue && !comment) {
-    return res.status(400).json({ error: 'At least one field (issue or comment) must be provided' });
-  }
-
   const query = `
     UPDATE complaint 
     SET issue = ?, comment = ? 
