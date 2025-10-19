@@ -12,7 +12,7 @@ EarningRouter.get('/', (req, res) => {
 
 EarningRouter.get('/all', (req, res) => {
     mysqlconnection.
-    query( 'SELECT earnings.id, earnings.user_id, users.name AS customer_name,earnings.booking_id,book_id,bookings.service_id,services.name AS service_name,bookings.booking_status, bookings.amount, bookings.staff_id, earnings.amount, earnings.status, earnings.created_at, staff_user.name as staff_name FROM earnings INNER JOIN users ON earnings.user_id = users.id INNER JOIN bookings ON bookings.book_id = earnings.booking_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id INNER JOIN services ON services.service_id  = bookings.service_id', (error, rows, fields) => {
+    query( 'SELECT earnings.id, earnings.user_id, users.name AS customer_name,earnings.booking_id,book_id,bookings.service_id,services.name AS service_name,bookings.booking_status, bookings.amount,users.phone, bookings.staff_id, earnings.amount, earnings.status, earnings.created_at, staff_user.name as staff_name FROM earnings INNER JOIN users ON earnings.user_id = users.id INNER JOIN bookings ON bookings.book_id = earnings.booking_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id INNER JOIN services ON services.service_id  = bookings.service_id', (error, rows, fields) => {
         if (!error) {
             res.json(rows);
         } else {
