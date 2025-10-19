@@ -47,7 +47,8 @@ ComplaintRouter.put('/update/:id', (req, res) => {
       console.error('Error updating complaint:', error);
       return res.status(500).json({
         error: 'Failed to update complaint',
-        details: error.sqlMessage || error.message
+        details:  error.message,
+        body: req.body
       });
     }
 
