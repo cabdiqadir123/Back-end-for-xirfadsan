@@ -28,7 +28,7 @@ SubServiceRouter.get('/allNew', (req, res) => {
     ss.sub_service,
     ss.price,
     ss.description,
-    ss.service_id,
+    ss.status,
     ss.service_id,
     services.name,
     IFNULL(COUNT(bs.id), 0) AS total_booked
