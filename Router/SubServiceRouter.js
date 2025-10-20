@@ -148,18 +148,18 @@ SubServiceRouter.post(
   '/add_new',
   upload.fields([{ name: 'image', maxCount: 1 }]),
   (req, res) => {
-    const { sub_service, description, service_id, price, created_at } = req.body;
+    const { sub_service, description, service_id, price,status, created_at } = req.body;
     const imageBuffer = req.files?.image ? req.files.image[0].buffer : null;
 
     const query = `
       INSERT INTO sub_services 
-      (sub_service, description, service_id, price, image, created_at) 
-      VALUES (?, ?, ?, ?, ?, ?)
+      (sub_service, description, service_id, price, image,status, created_at) 
+      VALUES (?, ?, ?, ?, ?, ?,?)
     `;
 
     mysqlconnection.query(
       query,
-      [sub_service, description, service_id, price, imageBuffer, created_at],
+      [sub_service, description, service_id, price, imageBuffer,status, created_at],
       (error, result) => {
         if (error) {
           console.error('MySQL insert error:', error);
@@ -230,7 +230,7 @@ SubServiceRouter.put(
   ]),
   (req, res) => {
     const id = req.params.id;
-    const { sub_service, description, service_id, price } = req.body;
+    const { sub_service, description, service_id, price ,status} = req.body;
 
     // Collect file buffers only if present
     const fileFields = {
@@ -238,8 +238,8 @@ SubServiceRouter.put(
     };
 
     // Start query and values
-    let query = "UPDATE sub_services SET sub_service = ?, description = ? , service_id=?,	price=?";
-    const values = [sub_service, description, service_id, price];
+    let query = "UPDATE sub_services SET sub_service = ?, description = ? , service_id=?,	price=?, status=?";
+    const values = [sub_service, description, service_id, price,status];
 
     // Dynamically append file fields to SQL and values
     for (const [key, buffer] of Object.entries(fileFields)) {
