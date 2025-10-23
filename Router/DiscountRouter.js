@@ -11,7 +11,7 @@ DiscountRouter.get('/', (req, res) => {
 });
 
 DiscountRouter.get('/all', (req, res) => {
-    mysqlconnection.query('select id, services.service_id as sub_service_id, services.name AS sub_service,services.service_id,services.name AS servicename,services.service_id as price,promocode,discount.description,per,end_date,discount.color,discount.created_at from discount INNER JOIN services on discount.service_id =services.service_id ', (error, rows, fields) => {
+    mysqlconnection.query('select id, services.service_id as sub_service_id, services.name AS sub_service,services.service_id,services.name AS servicename,services.service_id as price,promocode,discount.description,type,per,min_order,used_count,usage_limit,end_date,discount.color,discount.created_at from discount INNER JOIN services on discount.service_id =services.service_id ', (error, rows, fields) => {
         if (!error) {
             res.json(rows);
         } else {
