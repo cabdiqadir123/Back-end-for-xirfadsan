@@ -185,7 +185,7 @@ DiscountRouter.put("/update_used_count/:id", (req, res) => {
     // Build dynamic SQL
     let query = `
     UPDATE discount 
-    SET used_count=?
+    SET used_count=used_count+?
   `;
     const values = [used_count];
 
