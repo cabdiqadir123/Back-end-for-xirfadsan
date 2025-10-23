@@ -177,6 +177,46 @@ DiscountRouter.put("/updateNew/:id", upload.single("image"), (req, res) => {
     });
 });
 
+DiscountRouter.put("/update_used_count/:id", (req, res) => {
+    const id = req.params.id;
+    const { used_count } = req.body;
+
+
+    // Build dynamic SQL
+    let query = `
+    UPDATE discount 
+    SET used_count=?
+  `;
+    const values = [used_count];
+
+
+    query += ` WHERE id = ?`;
+    values.push(id);
+
+    mysqlconnection.query(query, values, (err, result) => {
+        if (result.affectedRows === 0) {
+            return res.status(404).send("Discount not found");
+        }
+
+        if (err) {
+            console.error("❌ Error updated promo code:", err);
+            return res.status(500).json({
+                status: "error",
+                message: "Error updated promo code to database",
+                error: err.message,
+                body: req.body
+            });
+        }
+
+        // ✅ Successfully updated
+        res.status(200).json({
+            status: "success",
+            message: "Promo code updated successfully",
+            id: result.insertId, // ✅ Return the new promo code's ID
+        });
+    });
+});
+
 DiscountRouter.post('/delete', (req, res) => {
     const { id } = req.body;
     console.log(req.body);
