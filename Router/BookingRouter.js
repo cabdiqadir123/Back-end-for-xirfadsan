@@ -195,15 +195,32 @@ BookingRouter.put('/updateamount/:id', (req, res) => {
 BookingRouter.put('/assignWorker/:id', (req, res) => {
   const id = req.params.id;
   const { staff_id } = req.body;
-  console.log(req.body);
-  mysqlconnection.query('update bookings set staff_id=? where id=?'
-    , [staff_id, id], (error, rows, fields) => {
-      if (!error) {
-        res.json({ status: 'updated' });
-      } else {
-        console.log(error);
-      }
+
+  if (!staff_id) {
+    return res.status(400).json({ error: 'staff_id is required' });
+  }
+
+  const query = 'UPDATE bookings SET staff_id = ? WHERE id = ?';
+
+  mysqlconnection.query(query, [staff_id, id], (error, result) => {
+    if (error) {
+      console.error('Error assigning worker:', error);
+      return res.status(500).json({
+        error: 'Failed to assign worker',
+        details: error.sqlMessage || error.message,
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    res.status(200).json({
+      message: 'Worker assigned successfully',
+      id: id,
+      assigned_staff_id: staff_id,
     });
+  });
 });
 
 // 
