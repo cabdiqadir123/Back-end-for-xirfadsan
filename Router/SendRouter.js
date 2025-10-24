@@ -45,7 +45,6 @@ sendnotify.post('/send-data', async (req, res) => {
       data: { title, body, role: role ?? '', timestamp: uniqueId },
       android: {
         priority: 'high',
-        notification: { channel_id: 'channel_id' } // MUST match Flutter
       },
       apns: { headers: { 'apns-priority': '10' } },
       token
