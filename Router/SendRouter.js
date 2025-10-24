@@ -120,30 +120,18 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
           let offlineSaved = 0;
 
           // ✅ Handle failed tokens (offline/unregistered)
-          response.responses.forEach((r, i) => {
-            if (!r.success) {
-              const token = tokens[i];
-              const errCode = r.error?.code;
-
-              if (
-                errCode === "messaging/registration-token-not-registered" ||
-                errCode === "messaging/unregistered"
-              ) {
-                mysqlconnection.query(
-                  "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
-                  [token, title, body, role],
-                  (saveErr) => {
-                    if (saveErr) {
-                      console.error("❌ Failed to save offline message:", saveErr);
-                    } else {
-                      offlineSaved++;
-                    }
-                  }
-                );
-              } else {
-                console.error("⚠️ Failed to send to token:", token, errCode);
+          tokens.forEach((token) => {
+            mysqlconnection.query(
+              "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
+              [token, title, body, role],
+              (saveErr) => {
+                if (saveErr) {
+                  console.error("❌ Failed to save offline message:", saveErr);
+                } else {
+                  offlineSaved++;
+                }
               }
-            }
+            );
           });
 
           return res.status(200).send({
@@ -182,7 +170,7 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
         try {
           const message = {
             notification: { title: msg.title, body: msg.body },
-            data: { 
+            data: {
               title: msg.title,
               body: msg.body,
               role: msg.role,
