@@ -127,6 +127,9 @@ sendnotify.post('/user-online', (req, res) => {
       }
     }
 
+    // ✅ Clean up old sent messages (older than 3 days)
+    mysqlconnection.query("DELETE FROM offline_messages WHERE sent = TRUE AND created_at < NOW() - INTERVAL 3 DAY");
+
     res.status(200).send({ message: "Queued messages sent", count: rows.length });
   });
 });
