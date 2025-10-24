@@ -42,7 +42,7 @@ sendnotify.post('/send-data', async (req, res) => {
 
 
     const message = {
-      // notification: { title, body },
+      notification: { title, body },
       data: { title, body, role: role ?? '', timestamp: uniqueId },
       android: {
         priority: 'high',
@@ -100,6 +100,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
         const multicastMessage = {
           // notification: { title, body },
+          notification: { title, body },
           tokens,
           data: {
             title,
@@ -180,6 +181,7 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
       for (const msg of rows) {
         try {
           const message = {
+            notification: { title, body,role, timestamp: Date.now().toString()},
             data: { title: msg.title, body: msg.body, role: msg.role, timestamp: Date.now().toString() },
             token: token,
             android: { priority: 'high' },
