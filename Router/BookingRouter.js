@@ -9,7 +9,7 @@ BookingRouter.get('/', (req, res) => {
 });
 
 BookingRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff.user_id AS staff_user_id,staff_user.name as staff_name,staff_user.phone AS staff_phone,price_amount,amount,reason,per from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
+  mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff.user_id AS staff_user_id,staff_user.name as staff_name,staff_user.phone AS staff_phone,price_amount,amount,reason,per,per_type from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
     (error, rows, fields) => {
       if (!error) {
         res.json(rows);
@@ -103,6 +103,41 @@ BookingRouter.post('/add', (req, res) => {
   mysqlconnection.query(
     'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,staff_id,Avialable_time,discription,startdate,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);',
     [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, staff_id, Avialable_time, discription, startdate, created_at],
+    (error, results) => {
+      if (!error) {
+        // ✅ Return the inserted book_id in the response
+        res.json({ book_id: book_id });
+      } else {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to insert booking' });
+      }
+    }
+  );
+});
+
+// for new update
+BookingRouter.post('/add', (req, res) => {
+  const {
+    book_id,
+    customer_id,
+    service_id,
+    address,
+    booking_status,
+    price_amount,
+    amount,
+    per,
+    per_type,
+    staff_id,
+    Avialable_time,
+    discription,
+    startdate, created_at
+  } = req.body;
+
+  console.log(req.body);
+
+  mysqlconnection.query(
+    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,per_type,staff_id,Avialable_time,discription,startdate,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
+    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per,per_type, staff_id, Avialable_time, discription, startdate, created_at],
     (error, results) => {
       if (!error) {
         // ✅ Return the inserted book_id in the response
