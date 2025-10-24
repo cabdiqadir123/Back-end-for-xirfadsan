@@ -168,7 +168,7 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
   const { token } = req.body;
 
   mysqlconnection.query(
-    "SELECT * FROM offline_messages WHERE token = ? AND sent = FALSE",
+    "SELECT * FROM offline_messages WHERE token = ? AND sent = 0",
     [token],
     async (error, rows) => {
       if (error) return res.status(500).json({ message: "DB error", error: error.message });
