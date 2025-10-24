@@ -192,6 +192,20 @@ BookingRouter.put('/updateamount/:id', (req, res) => {
     });
 });
 
+BookingRouter.put('/updateamount/:id', (req, res) => {
+  const id = req.params.id;
+  const { staff_id } = req.body;
+  console.log(req.body);
+  mysqlconnection.query('update bookings set staff_id=? where id=?'
+    , [staff_id, id], (error, rows, fields) => {
+      if (!error) {
+        res.json({ status: 'updated' });
+      } else {
+        console.log(error);
+      }
+    });
+});
+
 // 
 BookingRouter.put('/updateamountNew/:id', (req, res) => {
   const id = req.params.id;
