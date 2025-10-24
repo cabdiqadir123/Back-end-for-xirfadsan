@@ -181,7 +181,7 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
       for (const msg of rows) {
         try {
           const message = {
-            notification: { title, body,role, timestamp: Date.now().toString()},
+            // notification: { title, body,role, timestamp: Date.now().toString()},
             data: { title: msg.title, body: msg.body, role: msg.role, timestamp: Date.now().toString() },
             token: token,
             android: { priority: 'high' },
