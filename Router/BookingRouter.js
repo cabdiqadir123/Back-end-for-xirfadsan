@@ -116,7 +116,7 @@ BookingRouter.post('/add', (req, res) => {
 });
 
 // for new update
-BookingRouter.post('/add', (req, res) => {
+BookingRouter.post('/addNew', (req, res) => {
   const {
     book_id,
     customer_id,
