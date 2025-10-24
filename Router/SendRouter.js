@@ -20,45 +20,50 @@ if (!admin.apps.length) {
   });
 }
 
+setInterval(() => {
+  mysqlconnection.query(
+    "DELETE FROM offline_messages WHERE sent = TRUE AND created_at < NOW() - INTERVAL 3 DAY",
+    (err, result) => {
+      if (err) {
+        console.error("❌ Cleanup error:", err);
+      } else {
+        console.log(`🧹 Cleaned up ${result.affectedRows} old messages`);
+      }
+    }
+  );
+}, 1000 * 60 * 60 * 6);
+
 // ✅ Single user notification
 sendnotify.post('/send-data', async (req, res) => {
-  const { title, body, token, role } = req.body; // <-- optional role for single user
+  const { title, body, token, role } = req.body;
 
   try {
     const message = {
-      data: {
-        title: title,
-        body: body,
-        role: role ?? '',
-        orderid: "test order",
-        orderdate: "date",
-        timestamp: Date.now().toString()
-      },
-      android: {
-        priority: 'high',
-        ttl: 0
-        // no notification field here
-      },
-      apns: {
-        headers: { 'apns-priority': '10' },
-        payload: {
-          aps: {
-            sound: 'default',
-            badge: 1,
-            'content-available': 1
-            // no alert here
-          }
-        }
-      },
+      data: { title, body, role: role ?? '', timestamp: Date.now().toString() },
+      android: { priority: 'high' },
+      apns: { headers: { 'apns-priority': '10' } },
       token
     };
 
     const response = await getMessaging().send(message);
-    console.log("Notification sent at:", new Date().toISOString());
-    return res.status(200).send({ message: "Notification sent", response });
+    console.log("✅ Notification sent:", response);
+    return res.status(200).json({ message: "Notification sent", response });
   } catch (err) {
-    console.error("Error sending notification:", err);
-    return res.status(500).send({ message: "Failed to send notification", error: err.message });
+    console.error("⚠️ Error sending notification:", err.code);
+
+    // Haddii token-ku uu khaldan yahay ama offline yahay
+    if (err.code === 'messaging/registration-token-not-registered' || err.code === 'messaging/unregistered') {
+      console.log("🔄 Token offline/unregistered, saving message...");
+      mysqlconnection.query(
+        "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
+        [token, title, body, role],
+        (error) => {
+          if (error) console.error("❌ Failed to save offline message:", error);
+        }
+      );
+    }
+
+    return res.status(500).json({ message: "Failed to send notification", error: err.message });
   }
 });
 
@@ -87,35 +92,52 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
         const multicastMessage = {
           tokens,
           data: {
-            title: title,
-            body: body,
+            title,
+            body,
             role,
-            orderid: "test order",
-            orderdate: "date",
             timestamp: Date.now().toString()
           },
-          android: {
-            priority: 'high'
-          },
-          apns: {
-            headers: { 'apns-priority': '10' },
-            payload: {
-              aps: {
-                sound: 'default',
-                badge: 1,
-                'content-available': 1
-              }
-            }
-          }
+          android: { priority: 'high' },
+          apns: { headers: { 'apns-priority': '10' } }
         };
 
         try {
           const response = await getMessaging().sendEachForMulticast(multicastMessage);
+
+          let offlineSaved = 0;
+
+          // ✅ Handle failed tokens (offline/unregistered)
+          response.responses.forEach((r, i) => {
+            if (!r.success) {
+              const token = tokens[i];
+              const errCode = r.error?.code;
+
+              if (
+                errCode === "messaging/registration-token-not-registered" ||
+                errCode === "messaging/unregistered"
+              ) {
+                mysqlconnection.query(
+                  "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
+                  [token, title, body, role],
+                  (saveErr) => {
+                    if (saveErr) {
+                      console.error("❌ Failed to save offline message:", saveErr);
+                    } else {
+                      offlineSaved++;
+                    }
+                  }
+                );
+              } else {
+                console.error("⚠️ Failed to send to token:", token, errCode);
+              }
+            }
+          });
+
           return res.status(200).send({
-            message: `Notification sent to role '${role}'`,
+            message: `✅ Notification sent to role '${role}'`,
             successCount: response.successCount,
             failureCount: response.failureCount,
-            responses: response.responses
+            offlineSaved,
           });
         } catch (messagingError) {
           console.error("Messaging error:", messagingError);
@@ -127,6 +149,46 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
     console.error("Unexpected error:", err);
     return res.status(500).send({ message: "Unexpected error", error: err.message });
   }
+});
+
+sendnotify.post('/sync-offline-messages', async (req, res) => {
+  const { token } = req.body;
+
+  mysqlconnection.query(
+    "SELECT * FROM offline_messages WHERE token = ? AND sent = FALSE",
+    [token],
+    async (error, rows) => {
+      if (error) return res.status(500).json({ message: "DB error", error: error.message });
+
+      if (rows.length === 0)
+        return res.status(200).json({ message: "No offline messages" });
+
+      let successCount = 0;
+
+      for (const msg of rows) {
+        try {
+          const message = {
+            data: { title: msg.title, body: msg.body, role: msg.role, timestamp: Date.now().toString() },
+            token: token,
+            android: { priority: 'high' },
+            apns: { headers: { 'apns-priority': '10' } }
+          };
+
+          await getMessaging().send(message);
+          successCount++;
+
+          mysqlconnection.query("UPDATE offline_messages SET sent = TRUE WHERE id = ?", [msg.id]);
+        } catch (sendErr) {
+          console.error("Error resending message:", sendErr);
+        }
+      }
+
+      return res.status(200).json({
+        message: `Resent ${successCount} messages to user`,
+        successCount,
+      });
+    }
+  );
 });
 
 module.exports = sendnotify;
