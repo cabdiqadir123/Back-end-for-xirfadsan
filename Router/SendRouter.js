@@ -42,9 +42,11 @@ sendnotify.post('/send-data', async (req, res) => {
 
 
     const message = {
+      notification: { title, body },
       data: { title, body, role: role ?? '', timestamp: uniqueId },
       android: {
         priority: 'high',
+        notification: { channel_id: 'channel_id' } // MUST match Flutter
       },
       apns: { headers: { 'apns-priority': '10' } },
       token
@@ -98,6 +100,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
         const uniqueId = Date.now().toString();
 
         const multicastMessage = {
+          notification: { title, body },
           tokens,
           data: {
             title,
@@ -107,6 +110,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
           },
           android: {
             priority: 'high',
+            notification: { channel_id: 'channel_id' } // MUST match Flutter
           },
           apns: { headers: { 'apns-priority': '10' } }
         };
