@@ -182,7 +182,7 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
         try {
           const message = {
             notification: { title: msg.title, body: msg.body},
-            data: { id: msg.id.toString(), title: msg.title, body: msg.body, role: msg.role },
+            data: { title: msg.title, body: msg.body, role: msg.role, timestamp: Date.now().toString()+msg.id },
             token: token,
             android: { priority: 'high' },
             apns: { headers: { 'apns-priority': '10' } }
