@@ -39,6 +39,10 @@ sendnotify.post('/send-data', async (req, res) => {
 
   try {
     const message = {
+      notification: {
+        title,
+        body
+      },
       data: { title, body, role: role ?? '', timestamp: Date.now().toString() },
       android: { priority: 'high' },
       apns: { headers: { 'apns-priority': '10' } },
@@ -90,6 +94,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
         const tokens = rows.map(row => row.token);
 
         const multicastMessage = {
+          notification: { title, body },
           tokens,
           data: {
             title,
