@@ -38,12 +38,14 @@ sendnotify.post('/send-data', async (req, res) => {
   const { title, body, token, role } = req.body;
 
   try {
+    const uniqueId = Date.now().toString(); // unique for each message
+
     const message = {
       notification: {
         title,
         body
       },
-      data: { title, body, role: role ?? '', timestamp: Date.now().toString() },
+      data: { title, body, role: role ?? '', timestamp: uniqueId },
       android: { priority: 'high' },
       apns: { headers: { 'apns-priority': '10' } },
       token
@@ -93,6 +95,9 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
         const tokens = rows.map(row => row.token);
 
+
+        const uniqueId = Date.now().toString();
+
         const multicastMessage = {
           notification: { title, body },
           tokens,
@@ -100,7 +105,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
             title,
             body,
             role,
-            timestamp: Date.now().toString()
+            timestamp: uniqueId 
           },
           android: { priority: 'high' },
           apns: { headers: { 'apns-priority': '10' } }
