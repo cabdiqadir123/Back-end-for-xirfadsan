@@ -192,7 +192,7 @@ BookingRouter.put('/updateamount/:id', (req, res) => {
     });
 });
 
-BookingRouter.put('/updateamount/:id', (req, res) => {
+BookingRouter.put('/assignWorker/:id', (req, res) => {
   const id = req.params.id;
   const { staff_id } = req.body;
   console.log(req.body);
