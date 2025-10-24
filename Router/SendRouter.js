@@ -168,7 +168,7 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
   const { token } = req.body;
 
   mysqlconnection.query(
-    "SELECT * FROM offline_messages WHERE token = ? AND sent = FALSE",
+    "SELECT * FROM offline_messages WHERE token = ? AND sent = FALSE ORDER BY id ASC",
     [token],
     async (error, rows) => {
       if (error) return res.status(500).json({ message: "DB error", error: error.message });
@@ -181,19 +181,33 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
       for (const msg of rows) {
         try {
           const message = {
-            notification: { title: msg.title, body: msg.body},
-            data: { title: msg.title, body: msg.body, role: msg.role, timestamp: Date.now().toString()+msg.id },
-            token: token,
+            notification: { title: msg.title, body: msg.body },
+            data: { 
+              title: msg.title,
+              body: msg.body,
+              role: msg.role,
+              // ✅ unique and stable ID
+              timestamp: msg.id.toString()
+            },
+            token,
             android: { priority: 'high' },
             apns: { headers: { 'apns-priority': '10' } }
           };
 
           await getMessaging().send(message);
-          successCount++;
 
-          mysqlconnection.query("UPDATE offline_messages SET sent = TRUE WHERE id = ?", [msg.id]);
+          // ✅ await DB update properly
+          await new Promise((resolve, reject) => {
+            mysqlconnection.query(
+              "UPDATE offline_messages SET sent = TRUE WHERE id = ?",
+              [msg.id],
+              (err) => (err ? reject(err) : resolve())
+            );
+          });
+
+          successCount++;
         } catch (sendErr) {
-          console.error("Error resending message:", sendErr);
+          console.error("❌ Error resending message:", sendErr);
         }
       }
 
