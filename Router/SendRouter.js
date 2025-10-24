@@ -40,13 +40,14 @@ sendnotify.post('/send-data', async (req, res) => {
   try {
     const uniqueId = Date.now().toString(); // unique for each message
 
+
     const message = {
-      notification: {
-        title,
-        body
-      },
+      notification: { title, body },
       data: { title, body, role: role ?? '', timestamp: uniqueId },
-      android: { priority: 'high' },
+      android: {
+        priority: 'high',
+        notification: { channel_id: 'channel_id' } // MUST match Flutter
+      },
       apns: { headers: { 'apns-priority': '10' } },
       token
     };
@@ -105,9 +106,12 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
             title,
             body,
             role,
-            timestamp: uniqueId 
+            timestamp: uniqueId
           },
-          android: { priority: 'high' },
+          android: {
+            priority: 'high',
+            notification: { channel_id: 'channel_id' } // MUST match Flutter
+          },
           apns: { headers: { 'apns-priority': '10' } }
         };
 
