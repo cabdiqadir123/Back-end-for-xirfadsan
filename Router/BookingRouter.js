@@ -207,7 +207,8 @@ BookingRouter.put('/assignWorker/:id', (req, res) => {
       console.error('Error assigning worker:', error);
       return res.status(500).json({
         error: 'Failed to assign worker',
-        details: error.sqlMessage || error.message,
+        details: error.message,
+        body:req.body
       });
     }
 
