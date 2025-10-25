@@ -42,7 +42,7 @@ sendnotify.post('/send-data', async (req, res) => {
 
 
     const message = {
-      notification: { title, body },
+      // notification: { title, body },
       data: { title, body, role: role ?? '', timestamp: uniqueId },
       android: {
         priority: 'high',
@@ -100,7 +100,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
         const multicastMessage = {
           // notification: { title, body },
-          notification: { title, body },
+          // notification: { title, body },
           tokens,
           data: {
             title,
