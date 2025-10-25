@@ -9,7 +9,7 @@ require('dotenv').config();
 async function syncOfflineMessagesForToken(token) {
   return new Promise((resolve, reject) => {
     mysqlconnection.query(
-      "SELECT * FROM offline_messages WHERE token = ? AND sent = 0",
+      "SELECT * FROM offline_messages WHERE token = ? AND sent = 0 ORDER BY id ASC",
       [token],
       async (error, rows) => {
         if (error) return reject({ error: error.message });
@@ -23,9 +23,21 @@ async function syncOfflineMessagesForToken(token) {
           });
         }
 
+        // 🟡 Skip the last message (usually the most recent one)
+        const rowsToSend = rows.slice(0, -1);
+
+        if (rowsToSend.length === 0) {
+          return resolve({
+            token,
+            totalRows: rows.length,
+            successCount: 0,
+            message: "Last message ignored to prevent duplicate"
+          });
+        }
+
         let successCount = 0;
 
-        for (const msg of rows) {
+        for (const msg of rowsToSend) {
           try {
             const message = {
               notification: { title: msg.title, body: msg.body },
@@ -39,15 +51,12 @@ async function syncOfflineMessagesForToken(token) {
               android: { priority: 'high' },
               apns: { headers: { 'apns-priority': '10' } }
             };
-            await getMessaging().send(message);
 
+            await getMessaging().send(message);
             successCount++;
 
-            // // ✅ Mark message as sent {}
-            // mysqlconnection.query(
-            //   "UPDATE offline_messages SET sent = 1 WHERE id = ?",
-            //   [msg.id]
-            // );
+            // Optional: mark as sent
+            // mysqlconnection.query("UPDATE offline_messages SET sent = 1 WHERE id = ?", [msg.id]);
           } catch (sendErr) {
             console.error(`❌ Error resending message to token ${token}:`, sendErr.message);
           }
@@ -56,6 +65,8 @@ async function syncOfflineMessagesForToken(token) {
         resolve({
           token,
           totalRows: rows.length,
+          sentRows: rowsToSend.length,
+          ignoredLast: true,
           successCount
         });
       }
