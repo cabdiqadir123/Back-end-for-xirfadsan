@@ -22,7 +22,7 @@ RatingRouter.post('/add', (req, res) => {
   const { user_id,staff_id,comment,rating,num_rating,cus_rating,num_cus_rating,book_id,created_at } = req.body;
   console.log(req.body);
   mysqlconnection.query('insert into review(user_id,staff_id,comment,rating,num_rating,cus_rating,num_cus_rating,book_id,created_at) values(?,?,?,?,?,?,?,?,?);',
-    [user_id,staff_id,comment,rating,num_ratingcus_rating,num_cus_rating,book_id,created_at], (error, rows, fields) => {
+    [user_id,staff_id,comment,rating,num_rating,cus_rating,num_cus_rating,book_id,created_at], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'inserted' });
       } else {
