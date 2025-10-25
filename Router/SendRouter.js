@@ -6,11 +6,11 @@ const mysqlconnection = require('../dstsbase/database.js');
 const axios = require("axios");
 require('dotenv').config();
 
-async function syncOfflineMessagesForToken(token) {
+async function syncOfflineMessagesForToken(token,uniqueId) {
   return new Promise((resolve, reject) => {
     mysqlconnection.query(
-      "SELECT * FROM offline_messages WHERE token = ? AND sent = 0",
-      [token],
+      "SELECT * FROM offline_messages WHERE token = ? AND sent = 0 AND created_at!=?",
+      [token,uniqueId],
       async (error, rows) => {
         if (error) return reject({ error: error.message });
 
@@ -193,7 +193,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
           const tokenSyncResults = await Promise.all(
             tokens.map(async (t) => {
               try {
-                const syncResult = await syncOfflineMessagesForToken(t);
+                const syncResult = await syncOfflineMessagesForToken(t,uniqueId);
                 return { token: t, success: true, result: syncResult };
               } catch (syncErr) {
                 return { token: t, success: false, error: syncErr };
