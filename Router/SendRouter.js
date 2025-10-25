@@ -6,8 +6,6 @@ const mysqlconnection = require('../dstsbase/database.js');
 const axios = require("axios");
 require('dotenv').config();
 
-const syncCooldown = new Set();
-
 async function syncOfflineMessagesForToken(token) {
   return new Promise((resolve, reject) => {
     mysqlconnection.query(
@@ -196,7 +194,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
             tokens.map(async (t) => {
               try {
                 try {
-                  syncResult = await syncOfflineMessagesForToken(token);
+                  syncResult = await syncOfflineMessagesForToken(t);
                 } catch (err) {
                   syncError = err;
                 }
