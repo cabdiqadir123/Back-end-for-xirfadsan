@@ -132,13 +132,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
           let offlineSaved = 0;
 
           // 🔁 Trigger sync for each token (so users fetch queued messages)
-          for (const t of tokens) {
-            try {
-              await triggerSyncOfflineMessages(t);
-            } catch (syncErr) {
-              console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
-            }
-          }
+          
 
           // ✅ Handle failed tokens (offline/unregistered)
           tokens.forEach((token) => {
@@ -154,6 +148,14 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
               }
             );
           });
+
+          for (const t of tokens) {
+            try {
+              await triggerSyncOfflineMessages(t);
+            } catch (syncErr) {
+              console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
+            }
+          }
 
           return res.status(200).send({
             message: `✅ Notification sent to role '${role}'`,
