@@ -72,11 +72,11 @@ NotificationRouter.put('/update-book_status/:id', (req, res) => {
     });
 });
 
-NotificationRouter.post('/delete', (req, res) => {
-  const { notification_id } = req.body;
+NotificationRouter.post('/delete/:id', (req, res) => {
+  const id = req.params.id;
   console.log(req.body);
   mysqlconnection.query('delete from notifications where notification_id=?'
-    , [notification_id], (error, rows, fields) => {
+    , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);
       } else {
