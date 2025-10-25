@@ -33,6 +33,39 @@ NotificationRouter.post('/add', (req, res) => {
     });
 });
 
+NotificationRouter.post('/add_to_all', async (req, res) => {
+  const { from_type, from_id, recipient_role, title, message, hasButton, hasBook_id, hasBook_started, created_at } = req.body;
+
+  try {
+    // 1. Get all user IDs with the recipient_role
+    const [users] = await mysqlconnection.promise().query(
+      'SELECT id FROM users WHERE role = ?',
+      [recipient_role]
+    );
+
+    if (users.length === 0) {
+      return res.json({ status: 'no users found for this role' });
+    }
+
+    // 2. Insert a notification for each user
+    const insertPromises = users.map(user => {
+      return mysqlconnection.promise().query(
+        'INSERT INTO notifications(from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [from_type, from_id, recipient_role, user.id, title, message, hasButton, hasBook_id, hasBook_started, created_at]
+      );
+    });
+
+    await Promise.all(insertPromises);
+
+    res.json({ status: 'notifications inserted', count: users.length });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: 'error', error });
+  }
+});
+
+
 NotificationRouter.put('/update', (req, res) => {
   const { recipient_role, message, notification_id } = req.body;
   console.log(req.body);
@@ -75,7 +108,7 @@ NotificationRouter.put('/update-book_status/:id', (req, res) => {
 NotificationRouter.post('/delete/:id', (req, res) => {
   const id = req.params.id;
   console.log(req.body);
-  mysqlconnection.query('delete from notifications where notification_id=?'
+  mysqlconnection.query('delete from notifications where user_id=?'
     , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);
