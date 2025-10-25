@@ -43,11 +43,11 @@ async function syncOfflineMessagesForToken(token) {
 
             successCount++;
 
-            // ✅ Mark message as sent
-            mysqlconnection.query(
-              "UPDATE offline_messages SET sent = 1 WHERE id = ?",
-              [msg.id]
-            );
+            // // ✅ Mark message as sent
+            // mysqlconnection.query(
+            //   "UPDATE offline_messages SET sent = 1 WHERE id = ?",
+            //   [msg.id]
+            // );
           } catch (sendErr) {
             console.error(`❌ Error resending message to token ${token}:`, sendErr.message);
           }
