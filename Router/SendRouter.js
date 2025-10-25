@@ -208,13 +208,13 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
           await getMessaging().send(message);
 
           // ✅ await DB update properly
-          await new Promise((resolve, reject) => {
-            mysqlconnection.query(
-              "UPDATE offline_messages SET sent = TRUE WHERE id = ?",
-              [msg.id],
-              (err) => (err ? reject(err) : resolve())
-            );
-          });
+          // await new Promise((resolve, reject) => {
+          //   mysqlconnection.query(
+          //     "UPDATE offline_messages SET sent = TRUE WHERE id = ?",
+          //     [msg.id],
+          //     (err) => (err ? reject(err) : resolve())
+          //   );
+          // });
 
           successCount++;
         } catch (sendErr) {
