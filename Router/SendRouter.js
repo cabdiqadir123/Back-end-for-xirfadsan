@@ -140,7 +140,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
   try {
     mysqlconnection.query(
-      "SELECT token FROM users WHERE role = ? AND token IS NOT NULL",
+      "SELECT token FROM users WHERE role = ? AND token IS NOT NULL AND status=Active",
       [role],
       async (error, rows) => {
         if (error) {
@@ -223,44 +223,27 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 sendnotify.post('/sync-offline-messages', async (req, res) => {
   const { token } = req.body;
 
+  if (!token) {
+    return res.status(400).json({ message: "Missing token" });
+  }
+
   mysqlconnection.query(
-    "SELECT * FROM offline_messages WHERE token = ? AND sent = 0",
+    "DELETE FROM offline_messages WHERE token = ? AND sent = 0",
     [token],
-    async (error, rows) => {
-      if (error) return res.status(500).json({ message: "DB error", error: error.message });
+    (error, result) => {
+      if (error) {
+        console.error("❌ DB delete error:", error);
+        return res.status(500).json({ message: "Database error", error: error.message });
+      }
 
-      if (rows.length === 0)
-        return res.status(200).json({ message: "No offline messages" });
-
-      let successCount = 0;
-
-      for (const msg of rows) {
-        try {
-          const message = {
-            notification: { title: msg.title, body: msg.body },
-            data: {
-              title: msg.title,
-              body: msg.body,
-              role: msg.role,
-              // ✅ unique and stable ID
-              timestamp: msg.id.toString()
-            },
-            token,
-            android: { priority: 'high' },
-            apns: { headers: { 'apns-priority': '10' } }
-          };
-
-          await getMessaging().send(message);
-
-          successCount++;
-        } catch (sendErr) {
-          console.error("❌ Error resending message:", sendErr);
-        }
+      if (result.affectedRows === 0) {
+        return res.status(200).json({ message: "No offline messages to delete" });
       }
 
       return res.status(200).json({
-        message: `Resent ${successCount} messages to user`,
-        successCount,
+        message: `🗑️ Deleted ${result.affectedRows} offline messages for token`,
+        deletedCount: result.affectedRows,
+        token,
       });
     }
   );
