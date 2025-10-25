@@ -190,16 +190,13 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
           );
 
           // 🔁 Trigger sync for all tokens in parallel
-          await Promise.all(
+          const tokenSyncResults = await Promise.all(
             tokens.map(async (t) => {
               try {
-                try {
-                  syncResult = await syncOfflineMessagesForToken(t);
-                } catch (err) {
-                  syncError = err;
-                }
+                const syncResult = await syncOfflineMessagesForToken(t);
+                return { token: t, success: true, result: syncResult };
               } catch (syncErr) {
-                console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
+                return { token: t, success: false, error: syncErr };
               }
             })
           );
@@ -209,6 +206,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
             successCount: response.successCount,
             failureCount: response.failureCount,
             offlineSaved,
+            tokenSyncResults,
           });
         } catch (messagingError) {
           console.error("Messaging error:", messagingError);
