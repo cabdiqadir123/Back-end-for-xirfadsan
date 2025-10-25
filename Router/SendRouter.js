@@ -3,7 +3,27 @@ const admin = require('firebase-admin');
 const { getMessaging } = require('firebase-admin/messaging');
 const sendnotify = Router();
 const mysqlconnection = require('../dstsbase/database.js');
+const axios = require("axios");
 require('dotenv').config();
+
+const syncCooldown = new Set();
+
+async function triggerSyncOfflineMessages(token) {
+  if (syncCooldown.has(token)) return; // skip if recently synced
+  syncCooldown.add(token);
+  setTimeout(() => syncCooldown.delete(token), 10000); // 10s cooldown
+
+  try {
+    await axios.post(
+      "https://back-end-for-xirfadsan.onrender.com/api/send/sync-offline-messages",
+      { token },
+      { headers: { "Content-Type": "application/json" } }
+    );
+    console.log(`🔁 Sync triggered for token ${token}`);
+  } catch (error) {
+    console.error("❌ Failed to trigger sync:", error.message);
+  }
+}
 
 let serviceAccount = null;
 
@@ -53,6 +73,7 @@ sendnotify.post('/send-data', async (req, res) => {
 
     const response = await getMessaging().send(message);
     console.log("✅ Notification sent:", response);
+    await triggerSyncOfflineMessages(token);
     return res.status(200).json({ message: "Notification sent", response });
   } catch (err) {
     console.error("⚠️ Error sending notification:", err.code);
@@ -94,42 +115,44 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
         }
 
         const tokens = rows.map(row => row.token);
-
-
         const uniqueId = Date.now().toString();
 
         const multicastMessage = {
           notification: { title, body },
+          data: { title, body, role, timestamp: uniqueId },
+          android: { priority: 'high' },
+          apns: { headers: { 'apns-priority': '10' } },
           tokens,
-          data: {
-            title,
-            body,
-            role,
-            timestamp: uniqueId
-          },
-          android: {
-            priority: 'high',
-          },
-          apns: { headers: { 'apns-priority': '10' } }
         };
 
         try {
           const response = await getMessaging().sendEachForMulticast(multicastMessage);
+          console.log(`✅ Sent multicast to ${tokens.length} devices`);
 
           let offlineSaved = 0;
 
-          // ✅ Handle failed tokens (offline/unregistered)
-          response.responses.forEach((res, i) => {
-            if (!res.success) {
-              const token = tokens[i];
-              mysqlconnection.query(
-                "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
-                [token, title, body, role],
-                (saveErr) => {
-                  if (saveErr) console.error("❌ Failed to save offline message:", saveErr);
-                }
-              );
+          // 🔁 Trigger sync for each token (so users fetch queued messages)
+          for (const t of tokens) {
+            try {
+              await triggerSyncOfflineMessages(t);
+            } catch (syncErr) {
+              console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
             }
+          }
+
+          // ✅ Handle failed tokens (offline/unregistered)
+          tokens.forEach((token) => {
+            mysqlconnection.query(
+              "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
+              [token, title, body, role],
+              (saveErr) => {
+                if (saveErr) {
+                  console.error("❌ Failed to save offline message:", saveErr);
+                } else {
+                  offlineSaved++;
+                }
+              }
+            );
           });
 
           return res.status(200).send({
