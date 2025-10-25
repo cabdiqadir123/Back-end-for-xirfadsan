@@ -9,19 +9,23 @@ require('dotenv').config();
 const syncCooldown = new Set();
 
 async function triggerSyncOfflineMessages(token) {
-  if (syncCooldown.has(token)) return; // skip if recently synced
+  if (syncCooldown.has(token)) return;
   syncCooldown.add(token);
-  setTimeout(() => syncCooldown.delete(token), 10000); // 10s cooldown
+  setTimeout(() => syncCooldown.delete(token), 10000);
+
+  const SYNC_URL =
+    process.env.SYNC_URL ||
+    "https://back-end-for-xirfadsan.onrender.com/api/send/sync-offline-messages";
 
   try {
-    await axios.post(
-      "https://back-end-for-xirfadsan.onrender.com/api/send/sync-offline-messages",
+    const res = await axios.post(
+      SYNC_URL,
       { token },
       { headers: { "Content-Type": "application/json" } }
     );
-    console.log(`🔁 Sync triggered for token ${token}`);
+    console.log(`🔁 Sync triggered for token ${token} (${res.status})`);
   } catch (error) {
-    console.error("❌ Failed to trigger sync:", error.message);
+    console.error(`❌ Failed to trigger sync for ${token}:`, error.message);
   }
 }
 
@@ -131,31 +135,36 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
           let offlineSaved = 0;
 
-          // 🔁 Trigger sync for each token (so users fetch queued messages)
-          
+          // 🔁 Save offline messages in parallel
+          await Promise.all(
+            tokens.map(token =>
+              new Promise((resolve) => {
+                mysqlconnection.query(
+                  "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
+                  [token, title, body, role],
+                  (err) => {
+                    if (err) {
+                      console.error("❌ Failed to save offline message:", err);
+                    } else {
+                      offlineSaved++;
+                    }
+                    resolve();
+                  }
+                );
+              })
+            )
+          );
 
-          // ✅ Handle failed tokens (offline/unregistered)
-          tokens.forEach((token) => {
-            mysqlconnection.query(
-              "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
-              [token, title, body, role],
-              (saveErr) => {
-                if (saveErr) {
-                  console.error("❌ Failed to save offline message:", saveErr);
-                } else {
-                  offlineSaved++;
-                }
+          // 🔁 Trigger sync for all tokens in parallel
+          await Promise.all(
+            tokens.map(async (t) => {
+              try {
+                await triggerSyncOfflineMessages(t);
+              } catch (syncErr) {
+                console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
               }
-            );
-          });
-
-          for (const t of tokens) {
-            try {
-              await triggerSyncOfflineMessages(t);
-            } catch (syncErr) {
-              console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
-            }
-          }
+            })
+          );
 
           return res.status(200).send({
             message: `✅ Notification sent to role '${role}'`,
@@ -206,15 +215,6 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
           };
 
           await getMessaging().send(message);
-
-          // ✅ await DB update properly
-          // await new Promise((resolve, reject) => {
-          //   mysqlconnection.query(
-          //     "UPDATE offline_messages SET sent = TRUE WHERE id = ?",
-          //     [msg.id],
-          //     (err) => (err ? reject(err) : resolve())
-          //   );
-          // });
 
           successCount++;
         } catch (sendErr) {
