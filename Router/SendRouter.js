@@ -9,7 +9,7 @@ require('dotenv').config();
 async function syncOfflineMessagesForToken(token,uniqueId) {
   return new Promise((resolve, reject) => {
     mysqlconnection.query(
-      "SELECT * FROM offline_messages WHERE token = ? AND sent = 0 AND created_at!=?",
+      "SELECT * FROM offline_messages WHERE token = ? AND sent = 0 AND created_at !=?",
       [token,uniqueId],
       async (error, rows) => {
         if (error) return reject({ error: error.message });
