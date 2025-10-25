@@ -99,7 +99,6 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
         const uniqueId = Date.now().toString();
 
         const multicastMessage = {
-          // notification: { title, body },
           notification: { title, body },
           tokens,
           data: {
