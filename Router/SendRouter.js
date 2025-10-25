@@ -8,25 +8,43 @@ require('dotenv').config();
 
 const syncCooldown = new Set();
 
-async function triggerSyncOfflineMessages(token) {
-  if (syncCooldown.has(token)) return;
-  syncCooldown.add(token);
-  setTimeout(() => syncCooldown.delete(token), 10000);
+async function syncOfflineMessagesForToken(token) {
+  return new Promise((resolve, reject) => {
+    mysqlconnection.query(
+      "SELECT * FROM offline_messages WHERE token = ? AND sent = 0",
+      [token],
+      async (error, rows) => {
+        if (error) return reject(error);
 
-  const SYNC_URL =
-    process.env.SYNC_URL ||
-    "https://back-end-for-xirfadsan.onrender.com/api/send/sync-offline-messages";
+        if (rows.length === 0) return resolve({ message: "No offline messages" });
 
-  try {
-    const res = await axios.post(
-      SYNC_URL,
-      { token },
-      { headers: { "Content-Type": "application/json" } }
+        let successCount = 0;
+
+        for (const msg of rows) {
+          try {
+            const message = {
+              notification: { title: msg.title, body: msg.body },
+              data: {
+                title: msg.title,
+                body: msg.body,
+                role: msg.role,
+                timestamp: msg.id.toString()
+              },
+              token,
+              android: { priority: 'high' },
+              apns: { headers: { 'apns-priority': '10' } }
+            };
+            await getMessaging().send(message);
+            successCount++;
+          } catch (sendErr) {
+            console.error("❌ Error resending message:", sendErr);
+          }
+        }
+
+        resolve({ successCount });
+      }
     );
-    console.log(`🔁 Sync triggered for token ${token} (${res.status})`);
-  } catch (error) {
-    console.error(`❌ Failed to trigger sync for ${token}:`, error.message);
-  }
+  });
 }
 
 let serviceAccount = null;
@@ -77,7 +95,7 @@ sendnotify.post('/send-data', async (req, res) => {
 
     const response = await getMessaging().send(message);
     console.log("✅ Notification sent:", response);
-    await triggerSyncOfflineMessages(token);
+    await syncOfflineMessagesForToken(token);
     return res.status(200).json({ message: "Notification sent", response });
   } catch (err) {
     console.error("⚠️ Error sending notification:", err.code);
@@ -159,7 +177,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
           await Promise.all(
             tokens.map(async (t) => {
               try {
-                await triggerSyncOfflineMessages(t);
+                await syncOfflineMessagesForToken(t);
               } catch (syncErr) {
                 console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
               }
