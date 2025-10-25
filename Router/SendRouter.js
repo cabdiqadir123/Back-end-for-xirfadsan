@@ -43,7 +43,7 @@ async function syncOfflineMessagesForToken(token) {
 
             successCount++;
 
-            // // ✅ Mark message as sent
+            // // ✅ Mark message as sent {}
             // mysqlconnection.query(
             //   "UPDATE offline_messages SET sent = 1 WHERE id = ?",
             //   [msg.id]
