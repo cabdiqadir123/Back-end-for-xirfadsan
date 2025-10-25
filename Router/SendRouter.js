@@ -14,9 +14,16 @@ async function syncOfflineMessagesForToken(token) {
       "SELECT * FROM offline_messages WHERE token = ? AND sent = 0",
       [token],
       async (error, rows) => {
-        if (error) return reject(error);
+        if (error) return reject({ error: error.message });
 
-        if (rows.length === 0) return resolve({ message: "No offline messages" });
+        if (!rows || rows.length === 0) {
+          return resolve({
+            token,
+            totalRows: 0,
+            successCount: 0,
+            message: "No offline messages"
+          });
+        }
 
         let successCount = 0;
 
@@ -35,13 +42,24 @@ async function syncOfflineMessagesForToken(token) {
               apns: { headers: { 'apns-priority': '10' } }
             };
             await getMessaging().send(message);
+
             successCount++;
+
+            // ✅ Mark message as sent
+            mysqlconnection.query(
+              "UPDATE offline_messages SET sent = 1 WHERE id = ?",
+              [msg.id]
+            );
           } catch (sendErr) {
-            console.error("❌ Error resending message:", sendErr);
+            console.error(`❌ Error resending message to token ${token}:`, sendErr.message);
           }
         }
 
-        resolve({ successCount });
+        resolve({
+          token,
+          totalRows: rows.length,
+          successCount
+        });
       }
     );
   });
@@ -177,7 +195,11 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
           await Promise.all(
             tokens.map(async (t) => {
               try {
-                await syncOfflineMessagesForToken(t);
+                try {
+                  syncResult = await syncOfflineMessagesForToken(token);
+                } catch (err) {
+                  syncError = err;
+                }
               } catch (syncErr) {
                 console.error(`⚠️ Sync trigger failed for ${t}:`, syncErr.message);
               }
