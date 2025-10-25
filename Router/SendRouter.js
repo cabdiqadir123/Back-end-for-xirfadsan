@@ -140,7 +140,7 @@ sendnotify.post('/send-data-to-all', async (req, res) => {
 
   try {
     mysqlconnection.query(
-      "SELECT token FROM users WHERE role = ? AND token IS NOT NULL AND status=Active",
+      "SELECT token FROM users WHERE role = ? AND token IS NOT NULL AND status='Active'",
       [role],
       async (error, rows) => {
         if (error) {
