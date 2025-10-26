@@ -20,7 +20,7 @@ NotificationRouter.get('/all', (req, res) => {
 });
 
 NotificationRouter.get('/all_dash', (req, res) => {
-  mysqlconnection.query('SELECT title, message , MAX(notification_id ) AS latest_idFROM notificationsGROUP BY title, message',
+  mysqlconnection.query('SELECT from_type,from_id,recipient_role ,created_at  ,message_open  ,title, message , MAX(notification_id ) AS latest_id FROM notifications GROUP BY from_type,from_id,recipient_role ,created_at ,message_open  ,title, message ;',
     (error, rows, fields) => {
       if (!error) {
         res.json(rows);
