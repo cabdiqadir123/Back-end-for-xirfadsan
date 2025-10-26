@@ -19,6 +19,17 @@ NotificationRouter.get('/all', (req, res) => {
     });
 });
 
+NotificationRouter.get('/all_dash', (req, res) => {
+  mysqlconnection.query('SELECT title, message , MAX(notification_id ) AS latest_idFROM notificationsGROUP BY title, message',
+    (error, rows, fields) => {
+      if (!error) {
+        res.json(rows);
+      } else {
+        console.log(error);
+      }
+    });
+});
+
 NotificationRouter.post('/add', (req, res) => {
   const { from_type, from_id, recipient_role, user_id, title, message, hasButton, hasBook_id, hasBook_started, created_at } = req.body;
   console.log(req.body);
