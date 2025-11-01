@@ -20,17 +20,47 @@ PrivacyRouter.get('/all', (req, res) => {
 });
 
 PrivacyRouter.post('/add', (req, res) => {
-    const { section_title, section_content, section_order, last_updated, effective_date, created_at } = req.body;
-    console.log(req.body);
+    const {
+        section_title,
+        section_content,
+        section_order,
+        last_updated,
+        effective_date,
+        created_at
+    } = req.body;
+
+    const sql = `
+    INSERT INTO privacy (section_title, section_content, section_order, last_updated, effective_date, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
     mysqlconnection.query(
-        'insert into privacy(section_title,section_content,section_order,last_updated, effective_date,created_at) values(?,?,?,?,?,?);',
-        [section_title, section_content, section_order, last_updated, effective_date, created_at], (error, rows, fields) => {
-            if (!error) {
-                res.json({ status: 'inserted' });
-            } else {
-                console.log(error);
+        sql,
+        [section_title, section_content, section_order, last_updated, effective_date, created_at],
+        (error, results) => {
+            if (error) {
+                console.error("❌ MySQL Insert Error:", error);
+                return res.status(500).json({ error: "Database insert failed" });
             }
-        });
+
+            // ✅ Get the inserted ID
+            const insertedId = results.insertId;
+
+            // ✅ Fetch the full inserted record to return
+            mysqlconnection.query(
+                'SELECT * FROM privacy WHERE id = ?',
+                [insertedId],
+                (err2, rows) => {
+                    if (err2) {
+                        console.error("❌ MySQL Fetch Error:", err2);
+                        return res.status(500).json({ error: "Failed to fetch inserted record" });
+                    }
+
+                    res.json(rows[0]); // ✅ Return the actual inserted record
+                }
+            );
+        }
+    );
 });
 
 PrivacyRouter.put('/update/:id', (req, res) => {
