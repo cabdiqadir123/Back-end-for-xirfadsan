@@ -32,6 +32,18 @@ BlogRouter.get("/all/:id", (req, res) => {
   });
 });
 
+BlogRouter.get("/allNew/:id", (req, res) => {
+  const blogid = req.params.id;
+  const query = "select id,title,short_description, blog,is_published,created_at from blog where id=?";
+  mysqlconnection.query(query, [blogid], (error, rows, fields) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+    }
+  });
+});
+
 BlogRouter.get("/image/:id", (req, res) => {
   const imageId = req.params.id;
   const query = "SELECT image FROM blog WHERE id=?";
