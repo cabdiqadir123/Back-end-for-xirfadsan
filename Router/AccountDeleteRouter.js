@@ -29,7 +29,7 @@ AccountDelRouter.post('/add', (req, res) => {
     const query = `
     INSERT INTO account_delete 
     (user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at ) 
-    VALUES (?, ?, ?, ?, ?, ?, ?,?);
+    VALUES ((select id from users where email=?), ?, ?, ?, ?, ?, ?,?);
   `;
     const values = [user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at ];
 
