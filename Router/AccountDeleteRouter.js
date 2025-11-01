@@ -20,31 +20,31 @@ AccountDelRouter.get('/all', (req, res) => {
 });
 
 AccountDelRouter.post('/add', (req, res) => {
-    const { user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at } = req.body;
+  const { user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at } = req.body;
 
-    if (!name || !email || !message) {
-        return res.status(400).json({ error: "Missing required fields (name, email, message)" });
+  if (!user_id || !user_email || !reason || !confirmation_text) {
+    return res.status(400).json({ error: "Missing required fields (user_id, user_email, reason, confirmation_text)" });
+  }
+
+  const query = `
+    INSERT INTO account_delete 
+    (user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at)
+    VALUES ((select id from users where email=?), ?, ?, ?, ?, ?, ?, ?)
+  `;
+  
+  const values = [user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at];
+
+  mysqlconnection.query(query, values, (error, result) => {
+    if (error) {
+      console.error("Error inserting account delete:", error);
+      return res.status(500).json({ error: "Failed to insert account delete request", details: error.message });
     }
 
-    const query = `
-    INSERT INTO account_delete 
-    (user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at ) 
-    VALUES ((select id from users where email=?), ?, ?, ?, ?, ?, ?,?);
-  `;
-    const values = [user_id, user_email, reason, confirmation_text, status, processed_by, processed_at, created_at ];
-
-    mysqlconnection.query(query, values, (error, result) => {
-        if (error) {
-            console.error("Error inserting account delete:", error);
-            return res.status(500).json({ error: "Failed to insert contact message", details: error });
-        }
-
-        // Return the inserted record ID
-        res.status(201).json({
-            message: "Contact message inserted successfully",
-            id: result.insertId,
-        });
+    res.status(201).json({
+      message: "Account delete request inserted successfully",
+      id: result.insertId,
     });
+  });
 });
 
 
