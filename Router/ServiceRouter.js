@@ -26,6 +26,7 @@ ServiceRouter.get('/allNew', (req, res) => {
     SELECT 
         s.service_id,
         s.name,
+        s.details,
         s.color,
         s.status,
         s.created_at,
