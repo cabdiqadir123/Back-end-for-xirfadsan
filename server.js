@@ -1,9 +1,11 @@
 const express = require('express');
-const cors = require("cors");
+const cors = require('cors');
 const fetch = require('node-fetch'); // npm install node-fetch@2
+const http = require('http');
+const { Server } = require('socket.io');
+const mysqlconnection = require('./dstsbase/database.js'); // ✅ to save chat messages
 
 const app = express();
-
 app.use(cors());
 app.set('port', process.env.PORT || 5000);
 app.use(express.json());
@@ -38,42 +40,99 @@ app.use('/api/evc-pay/', require('./Router/EvcRouter'));
 app.use('/api/member/', require('./Router/MemRouter'));
 app.use('/api/contact/', require('./Router/ContactRouter'));
 app.use('/api/account_delete/', require('./Router/AccountDeleteRouter'));
+app.use('/api/chat/', require('./Router/ChatRouter.js')); // ✅ Add your chat REST routes
 
 // ------------------- HEARTBEAT -------------------
-const APP_URL = process.env.APP_URL; // Set this in Render environment variables
-const MAIN_ROUTE = '/api/user/'; // Only ping this route to wake the service
+const APP_URL = process.env.APP_URL;
+const MAIN_ROUTE = '/api/user/';
 
-// Check Somalia time (UTC+3) and active hours
 function isSomaliaActiveTime() {
-    const now = new Date();
-    const somaliaHour = now.getUTCHours() + 3; // UTC+3
-    const hour = somaliaHour >= 24 ? somaliaHour - 24 : somaliaHour;
-    return hour >= 5 && hour <= 22; // 5 AM - 10 PM
+  const now = new Date();
+  const somaliaHour = now.getUTCHours() + 3;
+  const hour = somaliaHour >= 24 ? somaliaHour - 24 : somaliaHour;
+  return hour >= 5 && hour <= 22;
 }
 
-// Ping main route
 async function pingMainRoute() {
-    if (!APP_URL) return;
-    if (!isSomaliaActiveTime()) {
-        console.log(`[${new Date().toISOString()}] Outside active hours, skipping ping.`);
-        return;
-    }
+  if (!APP_URL) return;
+  if (!isSomaliaActiveTime()) {
+    console.log(`[${new Date().toISOString()}] Outside active hours, skipping ping.`);
+    return;
+  }
 
-    try {
-        const res = await fetch(APP_URL + MAIN_ROUTE);
-        console.log(`[${new Date().toISOString()}] Pinged ${MAIN_ROUTE} Status: ${res.status}`);
-    } catch (err) {
-        console.error(`[${new Date().toISOString()}] Ping failed for ${MAIN_ROUTE}:`, err.message);
-    }
+  try {
+    const res = await fetch(APP_URL + MAIN_ROUTE);
+    console.log(`[${new Date().toISOString()}] Pinged ${MAIN_ROUTE} Status: ${res.status}`);
+  } catch (err) {
+    console.error(`[${new Date().toISOString()}] Ping failed for ${MAIN_ROUTE}:`, err.message);
+  }
 }
 
-// Run every 14 minutes
 setInterval(pingMainRoute, 14 * 60 * 1000);
-
-// Optional: ping immediately at startup
 pingMainRoute();
 
+// ------------------- SOCKET.IO SETUP -------------------
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: '*', // or specify your frontend URL
+    methods: ['GET', 'POST']
+  }
+});
+
+let onlineUsers = new Map();
+
+io.on('connection', (socket) => {
+  console.log('🟢 User connected:', socket.id);
+
+  // user joins socket room by user_id
+  socket.on('join', (user_id) => {
+    onlineUsers.set(user_id, socket.id);
+    console.log(`👤 User ${user_id} joined with socket ${socket.id}`);
+  });
+
+  // handle sending a message
+  socket.on('send_message', (data) => {
+    const { sender_id, receiver_id, message } = data;
+    console.log('💬 Message:', data);
+
+    // Save to MySQL
+    mysqlconnection.query(
+      'INSERT INTO messages (sender_id, receiver_id, message, created_at) VALUES (?, ?, ?, NOW())',
+      [sender_id, receiver_id, message],
+      (error, result) => {
+        if (error) {
+          console.error('DB error:', error);
+          return;
+        }
+
+        // If receiver online, send message instantly
+        const receiverSocket = onlineUsers.get(receiver_id);
+        if (receiverSocket) {
+          io.to(receiverSocket).emit('receive_message', {
+            id: result.insertId,
+            sender_id,
+            receiver_id,
+            message,
+            created_at: new Date()
+          });
+        }
+      }
+    );
+  });
+
+  socket.on('disconnect', () => {
+    for (const [user_id, socket_id] of onlineUsers.entries()) {
+      if (socket_id === socket.id) {
+        onlineUsers.delete(user_id);
+        console.log(`🔴 User ${user_id} disconnected`);
+      }
+    }
+  });
+});
+
 // ------------------- START SERVER -------------------
-app.listen(app.get('port'), () => {
-    console.log('Server running on port', app.get('port'));
+server.listen(app.get('port'), () => {
+  console.log(`🚀 Server running with Socket.IO on port ${app.get('port')}`);
 });
