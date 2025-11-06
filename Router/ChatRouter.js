@@ -13,10 +13,21 @@ ChatRouter.get('/messages/:sender_id/:receiver_id', (req, res) => {
   const { sender_id, receiver_id } = req.params;
 
   mysqlconnection.query(
-    `SELECT * FROM messages 
-     WHERE (sender_id = ? AND receiver_id = ?) 
-        OR (sender_id = ? AND receiver_id = ?)
-     ORDER BY created_at ASC`,
+    `SELECT 
+    m.id,
+    m.sender_id,
+    sender.name AS sender_name,
+    m.receiver_id,
+    receiver.name AS receiver_name,
+    m.message,
+    m.created_at
+    FROM messages m
+    LEFT JOIN users sender ON m.sender_id = sender.id
+    LEFT JOIN users receiver ON m.receiver_id = receiver.id
+    WHERE (m.sender_id = ? AND m.receiver_id = ?) 
+    OR (m.sender_id = ? AND m.receiver_id = ?)
+    ORDER BY m.created_at ASC;
+    `,
     [sender_id, receiver_id, receiver_id, sender_id],
     (error, rows) => {
       if (!error) {
