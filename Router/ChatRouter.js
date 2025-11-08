@@ -20,7 +20,7 @@ ChatRouter.get('/messages/:sender_id/:receiver_id', (req, res) => {
     m.receiver_id,
     receiver.name AS receiver_name,
     m.message,
-    m.bookid,
+    m.bookid,d
     m.created_at
     FROM messages m
     LEFT JOIN users sender ON m.sender_id = sender.id
