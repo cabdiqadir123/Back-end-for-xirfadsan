@@ -94,13 +94,13 @@ io.on('connection', (socket) => {
 
   // handle sending a message
   socket.on('send_message', (data) => {
-    const { sender_id, receiver_id, message } = data;
+    const { sender_id, receiver_id, message, bookid } = data;
     console.log('💬 Message:', data);
 
     // Save to MySQL
     mysqlconnection.query(
-      'INSERT INTO messages (sender_id, receiver_id, message, created_at) VALUES (?, ?, ?, NOW())',
-      [sender_id, receiver_id, message],
+      'INSERT INTO messages (sender_id, receiver_id, message, bookid, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [sender_id, receiver_id, message, bookid],
       (error, result) => {
         if (error) {
           console.error('DB error:', error);
@@ -115,6 +115,7 @@ io.on('connection', (socket) => {
             sender_id,
             receiver_id,
             message,
+            bookid,
             created_at: new Date()
           });
         }
