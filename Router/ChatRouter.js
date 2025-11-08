@@ -20,6 +20,7 @@ ChatRouter.get('/messages/:sender_id/:receiver_id', (req, res) => {
     m.receiver_id,
     receiver.name AS receiver_name,
     m.message,
+    s.bookid,
     m.created_at
     FROM messages m
     LEFT JOIN users sender ON m.sender_id = sender.id
@@ -42,15 +43,15 @@ ChatRouter.get('/messages/:sender_id/:receiver_id', (req, res) => {
 
 // ✅ Send a new message
 ChatRouter.post('/send', (req, res) => {
-  const { sender_id, receiver_id, message } = req.body;
+  const { sender_id, receiver_id, message,bookid } = req.body;
 
   if (!sender_id || !receiver_id || !message) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
   mysqlconnection.query(
-    'INSERT INTO messages (sender_id, receiver_id, message, created_at) VALUES (?, ?, ?, NOW())',
-    [sender_id, receiver_id, message],
+    'INSERT INTO messages (sender_id, receiver_id, message,bookid, created_at) VALUES (?, ?, ?, ?, NOW())',
+    [sender_id, receiver_id, message, bookid],
     (error, result) => {
       if (!error) {
         res.json({ success: true, message_id: result.insertId });
