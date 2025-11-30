@@ -143,10 +143,17 @@ io.on("connection", (socket) => {
   });
 
   // Worker accepted call
-  socket.on("call_accepted", ({ callerId, receiverId }) => {
+  socket.on("call_rejected", ({ callerId, receiverId }) => {
     const callerSocket = onlineUsers.get(callerId);
-    if (callerSocket) io.to(callerSocket).emit("call_accepted");
+    if (callerSocket) {
+      io.to(callerSocket).emit("call_rejected", {
+        callerId,
+        receiverId
+      });
+    }
   });
+
+
 
   // Worker rejected call
   socket.on("call_rejected", ({ callerId, receiverId }) => {
