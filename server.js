@@ -143,23 +143,30 @@ io.on("connection", (socket) => {
   });
 
   // Worker accepted call
-  socket.on("call_rejected", ({ callerId, receiverId }) => {
+  socket.on("call_accepted", ({ callerId, receiverId }) => {
     const callerSocket = onlineUsers.get(callerId);
     if (callerSocket) {
-      io.to(callerSocket).emit("call_rejected", {
+      io.to(callerSocket).emit("call_accepted", {
         callerId,
-        receiverId
+        receiverId,
       });
     }
+    console.log(`📞 Call accepted by ${receiverId} for caller ${callerId}`);
   });
-
 
 
   // Worker rejected call
   socket.on("call_rejected", ({ callerId, receiverId }) => {
     const callerSocket = onlineUsers.get(callerId);
-    if (callerSocket) io.to(callerSocket).emit("call_rejected");
+    if (callerSocket) {
+      io.to(callerSocket).emit("call_rejected", {
+        callerId,
+        receiverId,
+      });
+    }
+    console.log(`📞 Call rejected by ${receiverId} for caller ${callerId}`);
   });
+
 
   // End call
   socket.on("end_call", ({ userId }) => {
