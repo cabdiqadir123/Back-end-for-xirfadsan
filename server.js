@@ -41,6 +41,7 @@ app.use('/api/member/', require('./Router/MemRouter'));
 app.use('/api/contact/', require('./Router/ContactRouter'));
 app.use('/api/account_delete/', require('./Router/AccountDeleteRouter'));
 app.use('/api/chat/', require('./Router/ChatRouter.js')); // ✅ Add your chat REST routes
+app.use('/api/call/', require('./Router/CallRouter'));
 
 // ------------------- HEARTBEAT -------------------
 const APP_URL = process.env.APP_URL;
