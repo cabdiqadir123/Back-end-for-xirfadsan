@@ -133,9 +133,11 @@ io.on("connection", (socket) => {
 
     io.to(receiverSocket).emit("incoming_call", {
       callerId,
+      receiverId,
       agoraToken,
       channelName
     });
+
 
     console.log(`📞 ${callerId} is calling ${receiverId}`);
   });
