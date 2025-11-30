@@ -1,62 +1,65 @@
-const { Router } = require('express');
-const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
-const mysqlconnection = require('../dstsbase/database.js');
+const { Router } = require("express");
+const { RtcTokenBuilder, RtcRole } = require("agora-access-token");
+const mysql = require("../dstsbase/database");
 
 const CallRouter = Router();
 
-const AGORA_APP_ID = process.env.AGORA_APP_ID;
-const AGORA_APP_CERT = process.env.AGORA_APP_CERT;
+const APP_ID = process.env.AGORA_APP_ID;
+const APP_CERT = process.env.AGORA_APP_CERT;
 
-// --------------------------------------------------
-// CREATE CALL (Generate Token + Notify Receiver)
-// --------------------------------------------------
-CallRouter.post('/create', (req, res) => {
+CallRouter.post("/create", (req, res) => {
     const { caller_id, receiver_id } = req.body;
 
     if (!caller_id || !receiver_id) {
         return res.status(400).json({ error: "Missing caller_id or receiver_id" });
     }
 
-    const channelName = `call_${caller_id}_${Date.now()}`;
+    // 1. Generate channel name (ONLY HERE)
+    const channel = `call_${caller_id}_${receiver_id}_${Date.now()}`;
+
+    // 2. Generate token
     const uid = 0;
     const role = RtcRole.PUBLISHER;
-    const expireTime = Math.floor(Date.now() / 1000) + 3600;
+    const expire = Math.floor(Date.now() / 1000) + 3600;
 
     const token = RtcTokenBuilder.buildTokenWithUid(
-        AGORA_APP_ID,
-        AGORA_APP_CERT,
-        channelName,
+        APP_ID,
+        APP_CERT,
+        channel,
         uid,
         role,
-        expireTime
+        expire
     );
 
-    mysqlconnection.query(
-        `INSERT INTO calls (caller_id, receiver_id, channel, status, created_at) 
-         VALUES (?, ?, ?, 'ringing', NOW())`,
-        [caller_id, receiver_id, channelName],
+    // 3. Save to DB (optional)
+    mysql.query(
+        `INSERT INTO calls (caller_id, receiver_id, channel, status) VALUES (?, ?, ?, 'ringing')`,
+        [caller_id, receiver_id, channel],
         (err, result) => {
-            if (err) return res.status(500).json({ error: "DB error" });
+            if (err) return res.json({ error: "DB error" });
 
-            // Notify receiver using socket
+            const call_id = result.insertId;
+
+            // 4. Notify receiver if online
             const receiverSocket = global.onlineUsers.get(receiver_id);
+
             if (receiverSocket) {
                 global.io.to(receiverSocket).emit("incoming_call", {
-                    call_id: result.insertId,
-                    caller_id,
-                    receiver_id,
-                    channel: channelName,
+                    call_id,
+                    callerId: caller_id,
+                    receiverId: receiver_id,
+                    channelName: channel,
                     token,
-                    agora_app_id: AGORA_APP_ID
+                    agoraAppId: APP_ID
                 });
             }
 
-            res.json({
+            return res.json({
                 success: true,
-                call_id: result.insertId,
-                channel: channelName,
+                call_id,
+                channel,
                 token,
-                agora_app_id: AGORA_APP_ID
+                agoraAppId: APP_ID
             });
         }
     );

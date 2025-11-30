@@ -127,60 +127,46 @@ io.on("connection", (socket) => {
   // ----------------------------------------------------
 
   // Client → Worker call request
-  socket.on("call_user", ({ callerId, receiverId, agoraToken, channelName }) => {
-    const receiverSocket = onlineUsers.get(receiverId);
-    if (!receiverSocket) return;
+  socket.on("call_user", (data) => {
+    const receiverSocket = global.onlineUsers.get(data.receiverId);
 
-    io.to(receiverSocket).emit("incoming_call", {
-      callerId,
-      receiverId,
-      agoraToken,
-      channelName
-    });
-
-
-    console.log(`📞 ${callerId} is calling ${receiverId}`);
-  });
-
-  // Worker accepted call
-  socket.on("call_accepted", ({ callerId, receiverId }) => {
-    const callerSocket = onlineUsers.get(callerId);
-    if (callerSocket) {
-      io.to(callerSocket).emit("call_accepted", {
-        callerId,
-        receiverId,
-      });
+    if (receiverSocket) {
+      io.to(receiverSocket).emit("incoming_call", data);
     }
-    console.log(`📞 Call accepted by ${receiverId} for caller ${callerId}`);
   });
 
+  // Receiver → accepts
+  socket.on("call_accepted", (data) => {
+    const callerSocket = global.onlineUsers.get(data.callerId);
 
-  // Worker rejected call
-  socket.on("call_rejected", ({ callerId, receiverId }) => {
-    const callerSocket = onlineUsers.get(callerId);
     if (callerSocket) {
-      io.to(callerSocket).emit("call_rejected", {
-        callerId,
-        receiverId,
-      });
+      io.to(callerSocket).emit("call_accepted", data);
     }
-    console.log(`📞 Call rejected by ${receiverId} for caller ${callerId}`);
   });
 
+  // Receiver → rejects
+  socket.on("call_rejected", (data) => {
+    const callerSocket = global.onlineUsers.get(data.callerId);
+
+    if (callerSocket) {
+      io.to(callerSocket).emit("call_rejected", data);
+    }
+  });
 
   // End call
-  socket.on("end_call", ({ userId }) => {
-    const otherSocket = onlineUsers.get(userId);
-    if (otherSocket) io.to(otherSocket).emit("call_ended");
+  socket.on("end_call", (data) => {
+    const otherSocket = global.onlineUsers.get(data.otherId);
+
+    if (otherSocket) {
+      io.to(otherSocket).emit("call_ended");
+    }
   });
 
-  // ----------------------------------------------------
-
   socket.on("disconnect", () => {
-    for (const [user_id, socket_id] of onlineUsers.entries()) {
-      if (socket_id === socket.id) {
-        onlineUsers.delete(user_id);
-        console.log(`🔴 User ${user_id} disconnected`);
+    for (const [uid, sid] of global.onlineUsers.entries()) {
+      if (sid === socket.id) {
+        global.onlineUsers.delete(uid);
+        break;
       }
     }
   });
