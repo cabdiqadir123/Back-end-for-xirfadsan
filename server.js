@@ -3,8 +3,9 @@ const cors = require('cors');
 const fetch = require('node-fetch'); // npm install node-fetch@2
 const http = require('http');
 const { Server } = require('socket.io');
-const mysqlconnection = require('./dstsbase/database.js'); // ✅ to save chat messages
+const mysqlconnection = require('./dstsbase/database.js');
 
+// ------------------- APP INIT -------------------
 const app = express();
 app.use(cors());
 app.set('port', process.env.PORT || 5000);
@@ -40,8 +41,8 @@ app.use('/api/evc-pay/', require('./Router/EvcRouter'));
 app.use('/api/member/', require('./Router/MemRouter'));
 app.use('/api/contact/', require('./Router/ContactRouter'));
 app.use('/api/account_delete/', require('./Router/AccountDeleteRouter'));
-app.use('/api/chat/', require('./Router/ChatRouter.js')); // ✅ Add your chat REST routes
-app.use('/api/call/', require('./Router/CallRouter'));
+app.use('/api/chat/', require('./Router/ChatRouter'));
+app.use('/api/call/', require('./Router/CallRouter')); // Agora token route
 
 // ------------------- HEARTBEAT -------------------
 const APP_URL = process.env.APP_URL;
@@ -49,69 +50,66 @@ const MAIN_ROUTE = '/api/user/';
 
 function isSomaliaActiveTime() {
   const now = new Date();
-  const somaliaHour = now.getUTCHours() + 3;
-  const hour = somaliaHour >= 24 ? somaliaHour - 24 : somaliaHour;
-  return hour >= 5 && hour <= 22;
+  const somaliaHour = (now.getUTCHours() + 3) % 24;
+  return somaliaHour >= 5 && somaliaHour <= 22;
 }
 
 async function pingMainRoute() {
   if (!APP_URL) return;
-  if (!isSomaliaActiveTime()) {
-    console.log(`[${new Date().toISOString()}] Outside active hours, skipping ping.`);
-    return;
-  }
+  if (!isSomaliaActiveTime()) return;
 
   try {
     const res = await fetch(APP_URL + MAIN_ROUTE);
-    console.log(`[${new Date().toISOString()}] Pinged ${MAIN_ROUTE} Status: ${res.status}`);
+    console.log(`Pinged ${MAIN_ROUTE} → Status: ${res.status}`);
   } catch (err) {
-    console.error(`[${new Date().toISOString()}] Ping failed for ${MAIN_ROUTE}:`, err.message);
+    console.error(`Ping failed:`, err.message);
   }
 }
 
 setInterval(pingMainRoute, 14 * 60 * 1000);
 pingMainRoute();
 
-// ------------------- SOCKET.IO SETUP -------------------
+// ------------------- SOCKET IO CONFIG -------------------
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: '*', // or specify your frontend URL
-    methods: ['GET', 'POST']
+    origin: "*",
+    methods: ["GET", "POST"]
   }
 });
 
-let onlineUsers = new Map();
+// Store online users
+const onlineUsers = new Map();
+global.io = io;                // make accessible globally
+global.onlineUsers = onlineUsers;
 
-io.on('connection', (socket) => {
-  console.log('🟢 User connected:', socket.id);
+// ------------------- SOCKET EVENTS -------------------
 
-  // user joins socket room by user_id
-  socket.on('join', (user_id) => {
+io.on("connection", (socket) => {
+  console.log("🟢 User connected:", socket.id);
+
+  // REGISTER USER
+  socket.on("join", (user_id) => {
     onlineUsers.set(user_id, socket.id);
-    console.log(`👤 User ${user_id} joined with socket ${socket.id}`);
+    console.log(`👤 User ${user_id} registered with socket ${socket.id}`);
   });
 
-  // handle sending a message
-  socket.on('send_message', (data) => {
+  // ----------------------------------------------------
+  // 🔥 CHAT SYSTEM
+  // ----------------------------------------------------
+  socket.on("send_message", (data) => {
     const { sender_id, receiver_id, message, bookid } = data;
-    console.log('💬 Message:', data);
 
-    // Save to MySQL
     mysqlconnection.query(
-      'INSERT INTO messages (sender_id, receiver_id, message, bookid, created_at) VALUES (?, ?, ?, ?, NOW())',
+      "INSERT INTO messages (sender_id, receiver_id, message, bookid, created_at) VALUES (?, ?, ?, ?, NOW())",
       [sender_id, receiver_id, message, bookid],
       (error, result) => {
-        if (error) {
-          console.error('DB error:', error);
-          return;
-        }
+        if (error) return console.error("DB error:", error);
 
-        // If receiver online, send message instantly
         const receiverSocket = onlineUsers.get(receiver_id);
         if (receiverSocket) {
-          io.to(receiverSocket).emit('receive_message', {
+          io.to(receiverSocket).emit("receive_message", {
             id: result.insertId,
             sender_id,
             receiver_id,
@@ -124,7 +122,45 @@ io.on('connection', (socket) => {
     );
   });
 
-  socket.on('disconnect', () => {
+  // ----------------------------------------------------
+  // 🔥 CALL SYSTEM (AGORA)
+  // ----------------------------------------------------
+
+  // Client → Worker call request
+  socket.on("call_user", ({ callerId, receiverId, agoraToken, channelName }) => {
+    const receiverSocket = onlineUsers.get(receiverId);
+    if (!receiverSocket) return;
+
+    io.to(receiverSocket).emit("incoming_call", {
+      callerId,
+      agoraToken,
+      channelName
+    });
+
+    console.log(`📞 ${callerId} is calling ${receiverId}`);
+  });
+
+  // Worker accepted call
+  socket.on("call_accepted", ({ callerId, receiverId }) => {
+    const callerSocket = onlineUsers.get(callerId);
+    if (callerSocket) io.to(callerSocket).emit("call_accepted");
+  });
+
+  // Worker rejected call
+  socket.on("call_rejected", ({ callerId, receiverId }) => {
+    const callerSocket = onlineUsers.get(callerId);
+    if (callerSocket) io.to(callerSocket).emit("call_rejected");
+  });
+
+  // End call
+  socket.on("end_call", ({ userId }) => {
+    const otherSocket = onlineUsers.get(userId);
+    if (otherSocket) io.to(otherSocket).emit("call_ended");
+  });
+
+  // ----------------------------------------------------
+
+  socket.on("disconnect", () => {
     for (const [user_id, socket_id] of onlineUsers.entries()) {
       if (socket_id === socket.id) {
         onlineUsers.delete(user_id);
@@ -135,6 +171,6 @@ io.on('connection', (socket) => {
 });
 
 // ------------------- START SERVER -------------------
-server.listen(app.get('port'), () => {
-  console.log(`🚀 Server running with Socket.IO on port ${app.get('port')}`);
+server.listen(app.get("port"), () => {
+  console.log(`🚀 Server running with Socket.IO on port ${app.get("port")}`);
 });
