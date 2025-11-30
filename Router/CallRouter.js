@@ -7,7 +7,9 @@ const CallRouter = Router();
 const AGORA_APP_ID = process.env.AGORA_APP_ID;
 const AGORA_APP_CERT = process.env.AGORA_APP_CERT;
 
-// 🔹 Create new call (customer → dashboard)
+// --------------------------------------------------
+// CREATE CALL (Generate Token + Notify Receiver)
+// --------------------------------------------------
 CallRouter.post('/create', (req, res) => {
     const { caller_id, receiver_id } = req.body;
 
@@ -15,15 +17,11 @@ CallRouter.post('/create', (req, res) => {
         return res.status(400).json({ error: "Missing caller_id or receiver_id" });
     }
 
-    // Unique channel name for call
     const channelName = `call_${caller_id}_${Date.now()}`;
-    const uid = 0; // Agora auto assigns UID
+    const uid = 0;
     const role = RtcRole.PUBLISHER;
-
-    // Token expires in 1 hour
     const expireTime = Math.floor(Date.now() / 1000) + 3600;
 
-    // Create token
     const token = RtcTokenBuilder.buildTokenWithUid(
         AGORA_APP_ID,
         AGORA_APP_CERT,
@@ -33,7 +31,6 @@ CallRouter.post('/create', (req, res) => {
         expireTime
     );
 
-    // Save call in MySQL
     mysqlconnection.query(
         `INSERT INTO calls (caller_id, receiver_id, channel, status, created_at) 
          VALUES (?, ?, ?, 'ringing', NOW())`,
@@ -41,13 +38,18 @@ CallRouter.post('/create', (req, res) => {
         (err, result) => {
             if (err) return res.status(500).json({ error: "DB error" });
 
-            // Notify receiver (dashboard) via socket.io
-            global.io.to(global.onlineUsers.get(receiver_id)).emit('incoming_call', {
-                call_id: result.insertId,
-                caller_id,
-                receiver_id,
-                channel: channelName,
-            });
+            // Notify receiver using socket
+            const receiverSocket = global.onlineUsers.get(receiver_id);
+            if (receiverSocket) {
+                global.io.to(receiverSocket).emit("incoming_call", {
+                    call_id: result.insertId,
+                    caller_id,
+                    receiver_id,
+                    channel: channelName,
+                    token,
+                    agora_app_id: AGORA_APP_ID
+                });
+            }
 
             res.json({
                 success: true,
@@ -56,34 +58,6 @@ CallRouter.post('/create', (req, res) => {
                 token,
                 agora_app_id: AGORA_APP_ID
             });
-        }
-    );
-});
-
-// 🔹 Answer call (dashboard)
-CallRouter.post('/answer', (req, res) => {
-    const { call_id } = req.body;
-
-    mysqlconnection.query(
-        "UPDATE calls SET status = 'answered' WHERE id = ?",
-        [call_id],
-        (err) => {
-            if (err) return res.status(500).json({ error: "DB error" });
-            res.json({ success: true });
-        }
-    );
-});
-
-// 🔹 End call
-CallRouter.post('/end', (req, res) => {
-    const { call_id } = req.body;
-
-    mysqlconnection.query(
-        "UPDATE calls SET status = 'ended' WHERE id = ?",
-        [call_id],
-        (err) => {
-            if (err) return res.status(500).json({ error: "DB error" });
-            res.json({ success: true });
         }
     );
 });
