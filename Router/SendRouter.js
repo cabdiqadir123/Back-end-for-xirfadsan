@@ -260,4 +260,61 @@ sendnotify.post('/sync-offline-messages', async (req, res) => {
   );
 });
 
+// ✅ Send CALL notification (incoming call)
+sendnotify.post('/send-call', async (req, res) => {
+  const { token, callerId, channelName, agoraToken } = req.body;
+
+  if (!token || !callerId || !channelName || !agoraToken) {
+    return res.status(400).json({ 
+      message: "Missing required fields: token, callerId, channelName, agoraToken" 
+    });
+  }
+
+  try {
+    const message = {
+      data: {
+        type: "call",
+        callerId: callerId.toString(),
+        channelName,
+        agoraToken
+      },
+      token,
+      android: { priority: "high" },
+      apns: { headers: { "apns-priority": "10" } },
+    };
+
+    const response = await getMessaging().send(message);
+    console.log("📞 Call notification sent:", response);
+
+    await syncOfflineMessagesForToken(token);
+
+    return res.status(200).json({ 
+      message: "Call notification sent", 
+      response 
+    });
+
+  } catch (err) {
+    console.error("⚠️ Error sending call notification:", err.code);
+
+    // Save offline if device unavailable
+    if (err.code === 'messaging/registration-token-not-registered' || err.code === 'messaging/unregistered') {
+      console.log("🔄 Saving offline call notification...");
+
+      mysqlconnection.query(
+        "INSERT INTO offline_messages (token, title, body, role, sent) VALUES (?, ?, ?, ?, FALSE)",
+        [token, "Incoming Call", "Someone is calling you", "call", false],
+        (dbErr) => {
+          if (dbErr) console.error("❌ Failed to save offline call message:", dbErr);
+        }
+      );
+    }
+
+    return res.status(500).json({
+      message: "Failed to send call notification",
+      error: err.message,
+    });
+  }
+});
+
+
 module.exports = sendnotify;
