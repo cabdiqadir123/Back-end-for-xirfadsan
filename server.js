@@ -44,6 +44,7 @@ app.use('/api/account_delete/', require('./Router/AccountDeleteRouter'));
 app.use('/api/chat/', require('./Router/ChatRouter'));
 app.use('/api/call/', require('./Router/CallRouter')); // Agora token route
 app.use('/api/address/', require('./Router/AddressRouter.js'));
+app.use('/api/receipts/', require('./Router/ReceiptsRouter.js'));
 
 // ------------------- HEARTBEAT -------------------
 const APP_URL = process.env.APP_URL;
