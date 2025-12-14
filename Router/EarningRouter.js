@@ -32,6 +32,18 @@ EarningRouter.get('/all_by_app', (req, res) => {
     });
 });
 
+EarningRouter.get('/all_by_app/:id', (req, res) => {
+    const { id } = req.params;
+    mysqlconnection.
+    query( 'select * from earnings where id=?',[id], (error, rows, fields) => {
+        if (!error) {
+            res.json(rows);
+        } else {
+            console.log(error);
+        }
+    });
+});
+
 EarningRouter.get('/earningstaff', (req, res) => {
     mysqlconnection.query('select earnings.id,earnings.user_id,users.name,booking_id,earnings.amount,staff_id,earnings.status,earnings.created_at,booking_status from earnings inner join users on earnings.user_id=users.id inner join bookings on bookings.book_id=earnings.booking_id', (error, rows, fields) => {
         if (!error) {
