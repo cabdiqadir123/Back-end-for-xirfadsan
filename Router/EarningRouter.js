@@ -32,7 +32,7 @@ EarningRouter.get('/all_by_app', (req, res) => {
     });
 });
 
-EarningRouter.get('/all_by_app/:id', (req, res) => {
+EarningRouter.get('/by-booking/:id', (req, res) => {
     const { id } = req.params;
     mysqlconnection.
     query( 'select * from earnings where booking_id=?',[id], (error, rows, fields) => {
