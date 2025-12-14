@@ -22,7 +22,7 @@ SubServiceRouter.get('/all', (req, res) => {
 
 SubServiceRouter.get('/by-service/:id', (req, res) => {
   const { id } = req.params;
-  mysqlconnection.query('SELECT s.sub_service_id, s.sub_service, s.price, s.description, s.service_id , services.name, s.status,s.created_at  FROM sub_services s join services on services.service_id = s.service_id where s.service_id=? GROUP BY s.sub_service_id, s.sub_service, s.price, s.description ', [id], (error, rows, fields) => {
+  mysqlconnection.query('SELECT s.sub_service_id, s.sub_service, s.price, s.description, s.service_id,services.name,s.status,COALESCE(MAX(f.id), 0) AS favourite_id,COALESCE(MAX(f.user_id), 0) AS favourite_user_id FROM sub_services s inner join services on services.service_id = s.service_id LEFT JOIN favourite f ON s.sub_service_id = f.sub_service_id where s.service_id =? GROUP BY s.sub_service_id, s.sub_service, s.price, s.description, s.service_id',[id], (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
