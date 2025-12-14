@@ -20,6 +20,16 @@ SubServiceRouter.get('/all', (req, res) => {
   });
 });
 
+SubServiceRouter.get('/by-service', (req, res) => {
+  mysqlconnection.query('SELECT s.sub_service_id, s.sub_service, s.price, s.description, s.service_id,services.name,s.status,COALESCE(MAX(f.id), 0) AS favourite_id,COALESCE(MAX(f.user_id), 0) AS favourite_user_id FROM sub_services s inner join services on services.service_id = s.service_id LEFT JOIN favourite f ON s.sub_service_id = f.sub_service_id GROUP BY s.sub_service_id, s.sub_service, s.price, s.description, s.service_id', (error, rows, fields) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+    }
+  });
+});
+
 // for new typescript dashboard
 SubServiceRouter.get('/allNew', (req, res) => {
   const query = `
