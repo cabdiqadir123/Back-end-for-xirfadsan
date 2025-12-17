@@ -78,7 +78,7 @@ InternRouter.post('/add', upload.single('profile_image'), (req, res) => {
 
     // convert image buffer to base64 string
     const profile_image = req.file
-        ? req.file.buffer.toString('base64')
+        ? req.file.buffer
         : null;
 
     const query = `
@@ -117,7 +117,7 @@ InternRouter.put('/update/:id', upload.single('profile_image'), (req, res) => {
     const { name, email, phone, address, role, sex, status } = req.body;
 
     const profile_image = req.file
-        ? req.file.buffer.toString('base64')
+        ? req.file.buffer
         : null;
 
     let query = `
