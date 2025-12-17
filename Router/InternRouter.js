@@ -74,7 +74,7 @@ InternRouter.get("/image/:id", (req, res) => {
    ADD INTERN
 ========================= */
 InternRouter.post('/add', upload.single('profile_image'), (req, res) => {
-    const { name, email, phone, role, sex, status } = req.body;
+    const { name, email, phone, address, role, sex, status } = req.body;
 
     // convert image buffer to base64 string
     const profile_image = req.file
@@ -83,13 +83,13 @@ InternRouter.post('/add', upload.single('profile_image'), (req, res) => {
 
     const query = `
         INSERT INTO intern 
-        (name, email, phone, role, sex, status, profile_image) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        (name, email, phone, address, role, sex, status, profile_image) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     mysqlconnection.query(
         query,
-        [name, email, phone, role, sex, status, profile_image],
+        [name, email, phone, address, role, sex, status, profile_image],
         (err, result) => {
             if (err) {
                 console.error("❌ Error inserting intern:", err);
@@ -114,7 +114,7 @@ InternRouter.post('/add', upload.single('profile_image'), (req, res) => {
 ========================= */
 InternRouter.put('/update/:id', upload.single('profile_image'), (req, res) => {
     const id = req.params.id;
-    const { name, email, phone, role, sex, status } = req.body;
+    const { name, email, phone, address, role, sex, status } = req.body;
 
     const profile_image = req.file
         ? req.file.buffer.toString('base64')
@@ -122,9 +122,9 @@ InternRouter.put('/update/:id', upload.single('profile_image'), (req, res) => {
 
     let query = `
         UPDATE intern 
-        SET name = ?, email = ?, phone = ?, role = ?, sex = ?, status = ?
+        SET name = ?, email = ?, phone = ?, address=?, role = ?, sex = ?, status = ?
     `;
-    const values = [name, email, phone, role, sex, status];
+    const values = [name, email, phone, address, role, sex, status];
 
     if (profile_image) {
         query += `, profile_image = ?`;
