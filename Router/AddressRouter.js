@@ -30,8 +30,8 @@ AddressRouter.get('/city', (req, res) => {
         });
 });
 
-AddressRouter.get('/district', (req, res) => {
-    mysqlconnection.query('select * from address where type="district"',
+AddressRouter.get('/state', (req, res) => {
+    mysqlconnection.query('select * from address where type="state"',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
@@ -41,8 +41,8 @@ AddressRouter.get('/district', (req, res) => {
         });
 });
 
-AddressRouter.get('/state', (req, res) => {
-    mysqlconnection.query('select * from address where type="state"',
+AddressRouter.get('/district', (req, res) => {
+    mysqlconnection.query('select * from address where type="district"',
         (error, rows, fields) => {
             if (!error) {
                 res.json(rows);
