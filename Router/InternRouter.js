@@ -54,6 +54,22 @@ InternRouter.get('/:id', (req, res) => {
     );
 });
 
+InternRouter.get("/image/:id", (req, res) => {
+    const imageId = req.params.id;
+    const query = "SELECT profile_image FROM intern WHERE id = ?";
+
+    mysqlconnection.query(query, [imageId], (err, result) => {
+        if (err) {
+            return res.status(500).send("Error fetching image");
+        }
+        if (result.length === 0) {
+            return res.status(404).send("Image not found");
+        }
+        res.contentType("image/jpeg");
+        res.send(result[0].profile_image); // Send the image buffer back as a response
+    });
+});
+
 /* =========================
    ADD INTERN
 ========================= */
