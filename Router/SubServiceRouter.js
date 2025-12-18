@@ -65,6 +65,41 @@ SubServiceRouter.get('/allNew', (req, res) => {
   });
 });
 
+SubServiceRouter.get('/allNew/:id', (req, res) => {
+  const id = req.params.id;
+  const query = `
+    SELECT 
+    ss.sub_service_id,
+    ss.sub_service,
+    ss.price,
+    ss.description,
+    ss.status,
+    ss.service_id,
+    services.name,
+    IFNULL(COUNT(bs.id), 0) AS total_booked
+    FROM sub_services ss
+    LEFT JOIN booking_sub_services bs ON ss.sub_service_id = bs.sub_service_id
+    inner join services on services.service_id = ss.service_id 
+    where ss.service_id=?
+    GROUP BY 
+        ss.sub_service_id,
+        ss.sub_service,
+        ss.price,
+        ss.description,
+        ss.service_id
+    ORDER BY ss.sub_service_id ASC;
+  `;
+
+  mysqlconnection.query(query,[id], (error, rows, fields) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+      res.status(500).json({ error: 'Database query failed' });
+    }
+  });
+});
+
 
 SubServiceRouter.get('/all_app/:id', (req, res) => {
   const id = req.params.id;
