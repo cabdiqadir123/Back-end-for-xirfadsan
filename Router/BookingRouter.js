@@ -137,14 +137,20 @@ BookingRouter.post('/addNew', (req, res) => {
 
   mysqlconnection.query(
     'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,per_type,staff_id,Avialable_time,discription,startdate,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
-    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per,per_type, staff_id, Avialable_time, discription, startdate, created_at],
+    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, per_type, staff_id, Avialable_time, discription, startdate, created_at],
     (error, results) => {
       if (!error) {
         // ✅ Return the inserted book_id in the response
         res.json({ book_id: book_id });
       } else {
         console.log(error);
-        res.status(500).json({ error: 'Failed to insert booking' });
+        res.status(500).json({
+          status: "error",
+          message: 'Failed to insert booking',
+          error: err.message,
+          body: req.body
+        });
+        console.log("REQ BODY 👉", req.body);
       }
     }
   );
@@ -243,7 +249,7 @@ BookingRouter.put('/assignWorker/:id', (req, res) => {
       return res.status(500).json({
         error: 'Failed to assign worker',
         details: error.message,
-        body:req.body
+        body: req.body
       });
     }
 
