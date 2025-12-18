@@ -147,7 +147,7 @@ BookingRouter.post('/addNew', (req, res) => {
         res.status(500).json({
           status: "error",
           message: 'Failed to insert booking',
-          error: err.message,
+          error: error.message,
           body: req.body
         });
         console.log("REQ BODY 👉", req.body);
