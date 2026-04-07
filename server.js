@@ -13,43 +13,31 @@ app.use(express.json());
 
 // ------------------- ROUTES -------------------
 app.use('/api/user/', require('./Router/UserRouter'));
-app.use('/api/services/', require('./Router/ServiceRouter'));
-app.use('/api/subservices/', require('./Router/SubServiceRouter'));
-app.use('/api/units/', require('./Router/UnitRouter'));
-app.use('/api/product/', require('./Router/ProductsRouter'));
-app.use('/api/supplier/', require('./Router/SupplierRouter'));
-app.use('/api/staff/', require('./Router/StaffRouter'));
-app.use('/api/freelancer/', require('./Router/FreelancerRouter'));
-app.use('/api/faq/', require('./Router/FaqRouter'));
 app.use('/api/Complaint/', require('./Router/ComplaintRouter'));
-app.use('/api/notification/', require('./Router/NotificationRouter'));
-app.use('/api/testimonial/', require('./Router/TestimonialRouter'));
-app.use('/api/banner/', require('./Router/BannerRouter'));
+// app.use('/api/notification/', require('./Router/NotificationRouter'));
 app.use('/api/booking/', require('./Router/BookingRouter'));
-app.use('/api/earning/', require('./Router/EarningRouter'));
-app.use('/api/discount/', require('./Router/DiscountRouter'));
 app.use('/api/send/', require('./Router/SendRouter'));
 app.use('/api/favour/', require('./Router/FavRouter'));
-app.use('/api/review/', require('./Router/ReviewRouter'));
-app.use('/api/terms/', require('./Router/TermsRouter'));
-app.use('/api/privacy/', require('./Router/PrivacyRouter'));
-app.use('/api/subscriber/', require('./Router/SubscriberRouter'));
-app.use('/api/blog/', require('./Router/BlogRouter'));
-app.use('/api/send-email/', require('./Router/NodemailerRouter'));
-app.use('/api/sms/', require('./Router/SmsRouter'));
-app.use('/api/evc-pay/', require('./Router/EvcRouter'));
-app.use('/api/member/', require('./Router/MemRouter'));
-app.use('/api/contact/', require('./Router/ContactRouter'));
-app.use('/api/account_delete/', require('./Router/AccountDeleteRouter'));
+// app.use('/api/evc-pay/', require('./Router/EvcRouter'));
+// app.use('/api/contact/', require('./Router/ContactRouter'));
+// app.use('/api/account_delete/', require('./Router/AccountDeleteRouter'));
 app.use('/api/chat/', require('./Router/ChatRouter'));
-app.use('/api/call/', require('./Router/CallRouter')); // Agora token route
-app.use('/api/address/', require('./Router/AddressRouter.js'));
-app.use('/api/receipts/', require('./Router/ReceiptsRouter.js'));
-app.use('/api/intern/', require('./Router/InternRouter.js'));
+app.use('/api/amenity/', require('./Router/AmenitiesRouter.js'));
+app.use('/api/property/', require('./Router/PropertyRouter.js'));
+app.use('/api/region/', require('./Router/RegionRouter.js'));
+app.use('/api/district/', require('./Router/DistrictRouter.js'));
+app.use('/api/property_rules/', require('./Router/PropertyRulesRouter.js'));
+app.use('/api/document/', require('./Router/DocumentRouter.js'));
+app.use('/api/favour/', require('./Router/FavRouter.js'));
+app.use('/api/rented/', require('./Router/RentedRouter.js'));
+app.use('/api/complaint/', require('./Router/ComplaintRouter.js'));
+app.use('/api/maintenance/', require('./Router/MaintenanceRouter.js'));
+app.use('/api/payment/', require('./Router/PaymentRouter.js'));
+app.use('/uploads', express.static('uploads'));
 
 // ------------------- HEARTBEAT -------------------
-const APP_URL = process.env.APP_URL;
-const MAIN_ROUTE = '/api/user/';
+// const APP_URL = `http://192.168.220.1:${app.get('port')}`;
+// const MAIN_ROUTE = '/api/user/';
 
 function isSomaliaActiveTime() {
   const now = new Date();
@@ -57,20 +45,20 @@ function isSomaliaActiveTime() {
   return somaliaHour >= 5 && somaliaHour <= 22;
 }
 
-async function pingMainRoute() {
-  if (!APP_URL) return;
-  if (!isSomaliaActiveTime()) return;
+// async function pingMainRoute() {
+//   if (!APP_URL) return;
+//   if (!isSomaliaActiveTime()) return;
 
-  try {
-    const res = await fetch(APP_URL + MAIN_ROUTE);
-    console.log(`Pinged ${MAIN_ROUTE} → Status: ${res.status}`);
-  } catch (err) {
-    console.error(`Ping failed:`, err.message);
-  }
-}
+//   try {
+//     const res = await fetch(APP_URL + MAIN_ROUTE);
+//     console.log(`Pinged ${MAIN_ROUTE} → Status: ${res.status}`);
+//   } catch (err) {
+//     console.error(`Ping failed:`, err.message);
+//   }
+// }
 
-setInterval(pingMainRoute, 14 * 60 * 1000);
-pingMainRoute();
+// setInterval(pingMainRoute, 14 * 60 * 1000);
+// pingMainRoute();
 
 // ------------------- SOCKET IO CONFIG -------------------
 const server = http.createServer(app);
@@ -102,25 +90,35 @@ io.on("connection", (socket) => {
   // 🔥 CHAT SYSTEM
   // ----------------------------------------------------
   socket.on("send_message", (data) => {
-    const { sender_id, receiver_id, message, bookid } = data;
+    const { sender_id, receiver_id, message, type, file_url, duration } = data;
 
     mysqlconnection.query(
-      "INSERT INTO messages (sender_id, receiver_id, message, bookid, created_at) VALUES (?, ?, ?, ?, NOW())",
-      [sender_id, receiver_id, message, bookid],
+      `INSERT INTO messages 
+    (sender_id, receiver_id, message, type, file_url, duration, created_at) 
+    VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+      [sender_id, receiver_id, message, type, file_url, duration],
       (error, result) => {
         if (error) return console.error("DB error:", error);
 
+        const newMessage = {
+          id: result.insertId,
+          sender_id,
+          receiver_id,
+          message,
+          type,
+          file_url,
+          duration,
+          created_at: new Date()
+        };
+
         const receiverSocket = onlineUsers.get(receiver_id);
+
         if (receiverSocket) {
-          io.to(receiverSocket).emit("receive_message", {
-            id: result.insertId,
-            sender_id,
-            receiver_id,
-            message,
-            bookid,
-            created_at: new Date()
-          });
+          io.to(receiverSocket).emit("receive_message", newMessage);
         }
+
+        // send back to sender also (VERY IMPORTANT)
+        socket.emit("receive_message", newMessage);
       }
     );
   });
@@ -176,6 +174,6 @@ io.on("connection", (socket) => {
 });
 
 // ------------------- START SERVER -------------------
-server.listen(app.get("port"), () => {
+server.listen(app.get("port"), '0.0.0.0', () => {
   console.log(`🚀 Server running with Socket.IO on port ${app.get("port")}`);
 });

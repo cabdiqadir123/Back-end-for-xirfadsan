@@ -1,24 +1,25 @@
 const { Router } = require('express')
 
-const ComplaintRouter = Router();
+const MaintenanceRouter = Router();
 
 const mysqlconnection = require('../dstsbase/database.js');
 
-ComplaintRouter.get('/', (req, res) => {
+MaintenanceRouter.get('/', (req, res) => {
   res.status(200).json('server on port 9000 and database is connected');
 });
 
-ComplaintRouter.get('/all', (req, res) => {
+MaintenanceRouter.get('/all', (req, res) => {
 
   const query = `
     SELECT 
-      c.id,
-      c.category,
-      c.title,
-      c.description,
-      c.status,
-      c.resolution_note,
-      c.created_at,
+      m.id,
+      m.category,
+      m.title,
+      m.description,
+      m.status,
+      m.urgency_level,
+      m.repair_time,
+      m.created_at,
 
       -- Tenant
       t.id AS tenant_id,
@@ -36,10 +37,10 @@ ComplaintRouter.get('/all', (req, res) => {
       o.full_name AS owner_name,
       o.phone AS owner_phone
 
-    FROM complaints c
+    FROM maintenance m
 
-    LEFT JOIN users t ON c.tenant_id = t.id
-    LEFT JOIN properties p ON c.property_id = p.id
+    LEFT JOIN users t ON m.tenant_id = t.id
+    LEFT JOIN properties p ON m.property_id = p.id
     LEFT JOIN users o ON p.owner_id = o.id
   `;
 
@@ -54,11 +55,11 @@ ComplaintRouter.get('/all', (req, res) => {
 
 });
 
-ComplaintRouter.post('/add', (req, res) => {
-  const { tenant_id, property_id, category, title, description, status, resolution_note, created_at } = req.body;
+MaintenanceRouter.post('/add', (req, res) => {
+  const { tenant_id, property_id, category, title, description, status, urgency_level,repair_time, created_at } = req.body;
   console.log(req.body);
-  mysqlconnection.query('insert into complaints(tenant_id , property_id , category ,title,description, status   ,resolution_note , created_at) values(?,?,?,?,?,?,?,?);',
-    [tenant_id, property_id, category, title, description, status, resolution_note, created_at], (error, rows, fields) => {
+  mysqlconnection.query('insert into maintenance(tenant_id , property_id , category ,title,description, status   ,urgency_level ,repair_time, created_at) values(?,?,?,?,?,?,?,?,?);',
+    [tenant_id, property_id, category, title, description, status, urgency_level,repair_time, created_at], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'inserted' });
       } else {
@@ -67,42 +68,40 @@ ComplaintRouter.post('/add', (req, res) => {
     });
 });
 
-ComplaintRouter.put('/update/:id', (req, res) => {
+MaintenanceRouter.put('/update/:id', (req, res) => {
   const id = req.params.id;
-  const { status, resolution_note } = req.body;
+  const { status } = req.body;
 
   const query = `
-    UPDATE complaints 
-    SET status = ?, resolution_note = ? 
+    UPDATE maintenance 
+    SET status = ?
     WHERE id = ?;
   `;
 
-  mysqlconnection.query(query, [status, resolution_note, id], (error, result) => {
+  mysqlconnection.query(query, [status,  id], (error, result) => {
     if (error) {
-      console.error('Error updating complaint:', error);
+      console.error('Error updating maintenance:', error);
       return res.status(500).json({
-        error: 'Failed to update complaint',
+        error: 'Failed to update maintenance',
         details: error.message,
         body: req.body
       });
     }
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Complaint not found' });
+      return res.status(404).json({ error: 'maintenance not found' });
     }
 
     res.status(200).json({
-      message: 'Complaint updated successfully',
-      id: id,
-      updated_fields: { issue, comment },
-      body: req.body
+      message: 'maintenance updated successfully',
+      id: id
     });
   });
 });
 
-ComplaintRouter.post('/delete:id', (req, res) => {
+MaintenanceRouter.post('/delete:id', (req, res) => {
   const id = req.params.id;
-  mysqlconnection.query('delete from complaints where id=?'
+  mysqlconnection.query('delete from maintenance where id=?'
     , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);
@@ -112,9 +111,9 @@ ComplaintRouter.post('/delete:id', (req, res) => {
     });
 });
 
-ComplaintRouter.post('/delete_all/:id', (req, res) => {
+MaintenanceRouter.post('/delete_all/:id', (req, res) => {
   const id = req.params.id;
-  mysqlconnection.query('delete from complaints where tenant_id =?'
+  mysqlconnection.query('delete from maintenance where tenant_id =?'
     , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);
@@ -124,4 +123,4 @@ ComplaintRouter.post('/delete_all/:id', (req, res) => {
     });
 });
 
-module.exports = ComplaintRouter;
+module.exports = MaintenanceRouter;

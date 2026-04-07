@@ -9,22 +9,40 @@ FavourRouter.get('/', (req, res) => {
 });
 
 FavourRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select id,favourite.sub_service_id,user_id,sub_service,service_id,price,description,favourite.created_at from favourite INNER JOIN sub_services on favourite.sub_service_id=sub_services.sub_service_id', (error, rows, fields) => {
+
+  const query = `
+    SELECT 
+      f.id,
+      f.property_id,
+      f.user_id,
+      p.name,
+      p.address,
+      p.rent,
+      p.description,
+      f.created_at
+
+    FROM favourite f
+    INNER JOIN properties p ON f.property_id = p.id
+  `;
+
+  mysqlconnection.query(query, (error, rows) => {
     if (!error) {
       res.json(rows);
     } else {
       console.log(error);
+      res.status(500).json({ error: "Database error" });
     }
   });
+
 });
 
 FavourRouter.post('/add', (req, res) => {
-  const { sub_service_id, user_id ,created_at} = req.body;
+  const { property_id, user_id, created_at } = req.body;
   console.log(req.body);
 
   mysqlconnection.query(
-    'INSERT INTO favourite(sub_service_id, user_id,created_at) VALUES (?, ?,?);',
-    [sub_service_id, user_id,created_at],
+    'INSERT INTO favourite(property_id , user_id,created_at) VALUES (?, ?,?);',
+    [property_id, user_id, created_at],
     (error, results, fields) => {
       if (!error) {
         // return the inserted ID
@@ -40,7 +58,7 @@ FavourRouter.post('/add', (req, res) => {
 FavourRouter.put('/update', (req, res) => {
   const { name, ismultiple, unit_id } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update favourite set sub_service_id= ?, user_id= ? where id=?'
+  mysqlconnection.query('update favourite set property_id= ?, user_id= ? where id=?'
     , [name, ismultiple, unit_id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
@@ -64,7 +82,7 @@ FavourRouter.post('/delete:id', (req, res) => {
 
 FavourRouter.post('/delete_all/:id', (req, res) => {
   const id = req.params.id;
-  mysqlconnection.query('delete from favourite where user_id=?'
+  mysqlconnection.query('delete from favourite where id=?'
     , [id], (error, rows, fields) => {
       if (!error) {
         res.json(rows);

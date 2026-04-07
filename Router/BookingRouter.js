@@ -9,14 +9,144 @@ BookingRouter.get('/', (req, res) => {
 });
 
 BookingRouter.get('/all', (req, res) => {
-  mysqlconnection.query('select bookings.id,book_id,customer_id,bookings.service_id,services.name,users.name AS customer_name,users.email,users.phone,booking_status,bookings.created_at,Avialable_time,discription,bookings.address,startdate,bookings.staff_id,staff.user_id AS staff_user_id,staff_user.name as staff_name,staff_user.phone AS staff_phone,price_amount,amount,reason,per,per_type,users.token as customer_token, staff_user.token as staff_token from users inner join bookings on bookings.customer_id=users.id inner join services on bookings.service_id=services.service_id INNER JOIN staff ON bookings.staff_id = staff.staff_id INNER JOIN users AS staff_user ON staff.user_id = staff_user.id',
-    (error, rows, fields) => {
-      if (!error) {
-        res.json(rows);
-      } else {
-        console.log(error);
-      }
-    });
+
+  const query = `
+  SELECT 
+      b.id,
+      b.move_in_date,
+      b.duration,
+      b.desciption,
+      b.status,
+      b.created_at,
+
+      -- Tenant info
+      tenant.id AS tenant_id,
+      tenant.full_name AS tenant_name,
+      tenant.phone AS tenant_phone,
+      tenant.email AS tenant_email,
+      tenant.region AS tenant_region,
+      tenant.district AS tenant_district,
+
+      -- Property info
+      p.id AS property_id,
+      p.name AS property_name,
+      p.property_type,
+      p.address,
+      p.rent,
+      p.deposit,
+
+      -- Region & District
+      r.name AS region_name,
+      d.name AS district_name,
+
+      -- Owner info
+      owner.id AS owner_id,
+      owner.full_name AS owner_name,
+      owner.phone AS owner_phone,
+      owner.email AS owner_email,
+      owner.region AS owner_region,
+      owner.district AS owner_district
+
+  FROM bookings b
+
+  INNER JOIN users tenant 
+      ON b.tenant_id = tenant.id
+
+  INNER JOIN properties p 
+      ON b.property_id = p.id
+
+  INNER JOIN users owner 
+      ON p.owner_id = owner.id
+
+  LEFT JOIN regions r 
+      ON p.region_id = r.id
+
+  LEFT JOIN districts d 
+      ON p.district_id = d.id
+
+  ORDER BY b.id DESC
+  `;
+
+  mysqlconnection.query(query, (error, rows) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+      res.status(500).json({ error: "Database query failed" });
+    }
+  });
+
+});
+
+BookingRouter.get("/all/:id", (req, res) => {
+  const book_id = req.params.id;
+  const query = `
+  SELECT 
+      b.id,
+      b.move_in_date,
+      b.duration,
+      b.desciption,
+      b.status,
+      b.created_at,
+
+      -- Tenant info
+      tenant.id AS tenant_id,
+      tenant.full_name AS tenant_name,
+      tenant.phone AS tenant_phone,
+      tenant.email AS tenant_email,
+      tenant.region AS tenant_region,
+      tenant.district AS tenant_district,
+
+      -- Property info
+      p.id AS property_id,
+      p.name AS property_name,
+      p.address,
+      p.rent,
+      p.deposit,
+
+      -- Region & District
+      r.name AS region_name,
+      d.name AS district_name,
+
+      -- Owner info
+      owner.id AS owner_id,
+      owner.full_name AS owner_name,
+      owner.phone AS owner_phone,
+      owner.email AS owner_email,
+      owner.region AS owner_region,
+      owner.district AS owner_district
+
+  FROM bookings b
+
+  INNER JOIN users tenant 
+      ON b.tenant_id = tenant.id
+
+  INNER JOIN properties p 
+      ON b.property_id = p.id
+
+  INNER JOIN users owner 
+      ON p.owner_id = owner.id
+
+  LEFT JOIN regions r 
+      ON p.region_id = r.id
+
+  LEFT JOIN districts d 
+      ON p.district_id = d.id
+
+    WHERE b.tenant_id = ?
+
+  ORDER BY b.id DESC
+  `;
+
+  mysqlconnection.query(query,[book_id], (error, rows) => {
+    if (!error) {
+      res.json(rows);
+    } else {
+      console.log(error);
+      res.status(500).json({ error: "Database query failed" });
+    }
+  });
+
 });
 
 BookingRouter.get('/all_booking_sub_services', (req, res) => {
@@ -43,7 +173,7 @@ BookingRouter.get('/all_booking_sub_services/:id', (req, res) => {
 });
 
 BookingRouter.get('/pending/all', (req, res) => {
-  mysqlconnection.query('select * from bookings where booking_status="Pending"', (error, rows, fields) => {
+  mysqlconnection.query('select * from bookings where status="Pending"', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -52,8 +182,8 @@ BookingRouter.get('/pending/all', (req, res) => {
   });
 });
 
-BookingRouter.get('/process/all', (req, res) => {
-  mysqlconnection.query('select * from bookings where booking_status="Process"', (error, rows, fields) => {
+BookingRouter.get('/progress/all', (req, res) => {
+  mysqlconnection.query('select * from bookings where status="in-progress"', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -62,8 +192,8 @@ BookingRouter.get('/process/all', (req, res) => {
   });
 });
 
-BookingRouter.get('/finished/all', (req, res) => {
-  mysqlconnection.query('select * from bookings where booking_status="Finished"', (error, rows, fields) => {
+BookingRouter.get('/approved/all', (req, res) => {
+  mysqlconnection.query('select * from bookings where status="approved"', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -72,8 +202,8 @@ BookingRouter.get('/finished/all', (req, res) => {
   });
 });
 
-BookingRouter.get('/cancelled/all', (req, res) => {
-  mysqlconnection.query('select * from bookings where booking_status="Cancelled"', (error, rows, fields) => {
+BookingRouter.get('/rejected/all', (req, res) => {
+  mysqlconnection.query('select * from bookings where status="rejected"', (error, rows, fields) => {
     if (!error) {
       res.json(rows);
     } else {
@@ -84,33 +214,39 @@ BookingRouter.get('/cancelled/all', (req, res) => {
 
 BookingRouter.post('/add', (req, res) => {
   const {
-    book_id,
-    customer_id,
-    service_id,
-    address,
-    booking_status,
-    price_amount,
-    amount,
-    per,
-    staff_id,
-    Avialable_time,
-    discription,
-    startdate, created_at
+    tenant_id,
+    property_id,
+    move_in_date,
+    duration,
+    desciption,
+    status,
+    created_at
   } = req.body;
 
   console.log(req.body);
 
+  const query = `
+    INSERT INTO bookings
+    (tenant_id, property_id, move_in_date, duration, desciption, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
   mysqlconnection.query(
-    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,staff_id,Avialable_time,discription,startdate,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);',
-    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, staff_id, Avialable_time, discription, startdate, created_at],
+    query,
+    [tenant_id, property_id, move_in_date, duration, desciption, status, created_at],
     (error, results) => {
-      if (!error) {
-        // ✅ Return the inserted book_id in the response
-        res.json({ book_id: book_id });
-      } else {
+      if (error) {
         console.log(error);
-        res.status(500).json({ error: 'Failed to insert booking' });
+        return res.status(500).json({ error: "Failed to insert booking" });
       }
+
+      // ✅ Get inserted ID
+      const insertedId = results.insertId;
+
+      res.status(200).json({
+        message: "Booking created successfully",
+        booking_id: insertedId
+      });
     }
   );
 });
@@ -118,93 +254,63 @@ BookingRouter.post('/add', (req, res) => {
 // for new update
 BookingRouter.post('/addNew', (req, res) => {
   const {
-    book_id,
-    customer_id,
-    service_id,
-    address,
-    booking_status,
-    price_amount,
-    amount,
-    per,
-    per_type,
-    staff_id,
-    Avialable_time,
-    discription,
-    startdate, created_at
+    tenant_id,
+    property_id,
+    move_in_date,
+    duration,
+    desciption,
+    status,
+    created_at
   } = req.body;
 
   console.log(req.body);
 
+  const query = `
+    INSERT INTO bookings
+    (tenant_id, property_id, move_in_date, duration, desciption, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
   mysqlconnection.query(
-    'INSERT INTO bookings(book_id,customer_id,service_id,address,booking_status,price_amount,amount,per,per_type,staff_id,Avialable_time,discription,startdate,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
-    [book_id, customer_id, service_id, address, booking_status, price_amount, amount, per, per_type, staff_id, Avialable_time, discription, startdate, created_at],
+    query,
+    [tenant_id, property_id, move_in_date, duration, desciption, status, created_at],
     (error, results) => {
-      if (!error) {
-        // ✅ Return the inserted book_id in the response
-        res.json({ book_id: book_id });
-      } else {
-        console.log(error);
-        res.status(500).json({
-          status: "error",
-          message: 'Failed to insert booking',
-          error: error.message,
-          body: req.body
-        });
-        console.log("REQ BODY 👉", req.body);
-      }
-    }
-  );
-});
-
-BookingRouter.post('/add_booking_subservices', (req, res) => {
-  const { book_id, sub_service_id, item } = req.body;
-
-  const sql = `INSERT INTO booking_sub_services (book_id, sub_service_id, item) VALUES (?, ?, ? )`;
-
-  mysqlconnection.query(
-    sql,
-    [book_id, sub_service_id, item],
-    (error) => {
       if (error) {
-        console.error(error);
-        return res.status(500).json({ status: "error", error: error.message });
+        console.log(error);
+        return res.status(500).json({ error: "Failed to insert booking" });
       }
-      res.json({ status: "inserted" });
+
+      // ✅ Get inserted ID
+      const insertedId = results.insertId;
+
+      res.status(200).json({
+        message: "Booking created successfully",
+        booking_id: insertedId
+      });
     }
   );
 });
 
-BookingRouter.put('/update', (req, res) => {
-  const { name, image, secondry_image, created_at, service_id } = req.body;
-  console.log(req.body);
-  mysqlconnection.query('update services set name= ?, image= ?, secondry_image= ?, created_at=? where service_id=?'
-    , [name, image, secondry_image, created_at, service_id], (error, rows, fields) => {
-      if (!error) {
-        res.json({ status: 'updated' });
-      } else {
-        console.log(error);
-      }
-    });
-});
+
 
 BookingRouter.put('/updatestatus/:id', (req, res) => {
   const id = req.params.id;
-  const { booking_status } = req.body;
+  const { status } = req.body;
 
-  if (!booking_status) {
-    return res.status(400).json({ error: "booking_status is required" });
+  if (!status) {
+    return res.status(400).json({ error: "status is required" });
   }
 
   const query = `
     UPDATE bookings
-    SET booking_status = ?
+    SET status = ?
     WHERE id = ?;
   `;
 
-  mysqlconnection.query(query, [booking_status, id], (error, result) => {
+  mysqlconnection.query(query, [status, id], (error, result) => {
     if (error) {
-      console.error("Error updating booking status:", error);
-      return res.status(500).json({ error: "Failed to update booking status", details: error });
+      console.error("Error updating status:", error);
+      return res.status(500).json({ error: "Failed to update status", details: error });
     }
 
     if (result.affectedRows === 0) {
@@ -214,17 +320,17 @@ BookingRouter.put('/updatestatus/:id', (req, res) => {
     res.status(200).json({
       message: "Booking status updated successfully",
       id: id,
-      new_status: booking_status
+      new_status: status
     });
   });
 });
 
-BookingRouter.put('/updateamount/:id', (req, res) => {
+BookingRouter.put('/updateduration /:id', (req, res) => {
   const id = req.params.id;
-  const { price_amount, amount } = req.body;
+  const { duration } = req.body;
   console.log(req.body);
-  mysqlconnection.query('update bookings set price_amount=?,amount=? where id=?'
-    , [price_amount, amount, id], (error, rows, fields) => {
+  mysqlconnection.query('update bookings set duration=? where id=?'
+    , [duration, id], (error, rows, fields) => {
       if (!error) {
         res.json({ status: 'updated' });
       } else {
@@ -233,48 +339,16 @@ BookingRouter.put('/updateamount/:id', (req, res) => {
     });
 });
 
-BookingRouter.put('/assignWorker/:id', (req, res) => {
-  const id = req.params.id;
-  const { staff_id } = req.body;
-
-  if (!staff_id) {
-    return res.status(400).json({ error: 'staff_id is required' });
-  }
-
-  const query = 'UPDATE bookings SET staff_id = ? WHERE id = ?';
-
-  mysqlconnection.query(query, [staff_id, id], (error, result) => {
-    if (error) {
-      console.error('Error assigning worker:', error);
-      return res.status(500).json({
-        error: 'Failed to assign worker',
-        details: error.message,
-        body: req.body
-      });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Booking not found' });
-    }
-
-    res.status(200).json({
-      message: 'Worker assigned successfully',
-      id: id,
-      assigned_staff_id: staff_id,
-    });
-  });
-});
-
 // 
-BookingRouter.put('/updateamountNew/:id', (req, res) => {
+BookingRouter.put('/updateduration New/:id', (req, res) => {
   const id = req.params.id;
-  const { amount, reason } = req.body; // get price_amount too
+  const { duration } = req.body; // get price_amount too
 
   console.log(req.body);
 
   mysqlconnection.query(
-    'UPDATE bookings SET  amount=?, reason=? WHERE id=?',
-    [amount, reason, id], // pass 4 values in correct order
+    'UPDATE bookings SET  duration =? WHERE id=?',
+    [duration, id], // pass 4 values in correct order
     (error, results) => {
       if (!error) {
         res.json({ status: 'updated', id }); // return id as requested
@@ -297,25 +371,6 @@ BookingRouter.post('/delete', (req, res) => {
         res.json({ status: error });
       }
     });
-});
-
-
-BookingRouter.post('/delete_all/:id', (req, res) => {
-  const id = req.params.id;
-
-  const sql = `
-    DELETE FROM bookings 
-    WHERE customer_id = ? 
-      AND booking_status IN ('Cancelled', 'Pending')
-  `;
-
-  mysqlconnection.query(sql, [id], (error, rows, fields) => {
-    if (!error) {
-      res.json({ message: 'Deleted successfully', affectedRows: rows.affectedRows });
-    } else {
-      res.json({ status: error });
-    }
-  });
 });
 
 module.exports = BookingRouter;
