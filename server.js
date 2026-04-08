@@ -37,6 +37,7 @@ app.use('/uploads', express.static('uploads'));
 
 // ------------------- HEARTBEAT -------------------
 // const APP_URL = `http://192.168.220.1:${app.get('port')}`;
+// const APP_URL = process.env.APP_URL;
 // const MAIN_ROUTE = '/api/user/';
 
 function isSomaliaActiveTime() {
