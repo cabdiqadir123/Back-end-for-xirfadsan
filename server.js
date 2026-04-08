@@ -175,6 +175,10 @@ io.on("connection", (socket) => {
 });
 
 // ------------------- START SERVER -------------------
-server.listen(app.get("port"), '0.0.0.0', () => {
+// server.listen(app.get("port"), '0.0.0.0', () => {
+//   console.log(`🚀 Server running with Socket.IO on port ${app.get("port")}`);
+// });
+
+server.listen(app.get("port"), () => {
   console.log(`🚀 Server running with Socket.IO on port ${app.get("port")}`);
 });
